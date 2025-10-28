@@ -1,255 +1,270 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Хакерская зона Тохира — Пранк-мод</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Хакерская зона — Тохир</title>
 <style>
   :root{
-    --neon: #00ff66;
-    --neon-bright: #7bff9a;
-    --bg: #000;
-    --glass: rgba(0,0,0,0.45);
+    --neon:#00ff66;
+    --neon-2:#7bff9a;
+    --glass: rgba(10,10,10,0.45);
+    --muted: #9fffa088;
+    --danger: #ff4d4d;
   }
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--neon);font-family: 'Courier New', monospace;overflow:hidden;}
-  canvas#matrix{position:fixed;inset:0;z-index:0;}
-  .page{
-    position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:20px;
-    backdrop-filter: blur(0px);
+  /* basic reset */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background: radial-gradient(ellipse at center, rgba(0,40,0,0.12), #000 40%), #000;
+    color:var(--neon);
+    font-family: "Courier New", monospace;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
   }
-  header{text-align:center}
-  h1{font-size:2.2rem;margin:0 0 8px;text-shadow:0 0 12px rgba(0,255,102,0.12),0 0 25px rgba(0,255,102,0.06);}
-  .subtitle{color:#00cc66aa;margin-bottom:18px}
-  .cursor{display:inline-block;background:var(--neon);width:8px;height:22px;vertical-align:middle;margin-left:8px;animation:blink 1s steps(1) infinite}
-  @keyframes blink{50%{opacity:0}}
-  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:14px}
-  .btn{
-    background:transparent;border:2px solid var(--neon);color:var(--neon);padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:700;
-    box-shadow:0 0 14px rgba(0,255,102,0.05);transition:all .2s;
+
+  /* MATRIX CANVAS */
+  canvas#matrix {
+    position:fixed;inset:0;z-index:0;
+    display:block;pointer-events:none;
+    mix-blend-mode:screen;
   }
-  .btn:hover{background:var(--neon);color:#000;transform:translateY(-3px);box-shadow:0 0 28px rgba(0,255,102,0.18)}
-  .small{font-size:0.9rem;color:#9fffa0aa}
-  .panel{
-    position:fixed;right:20px;bottom:20px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(10,10,10,0.5));
-    border:1px solid rgba(0,255,102,0.08);padding:12px;border-radius:10px;z-index:5;
+
+  /* noise overlay for film look */
+  .noise {
+    position:fixed;inset:0;z-index:3;pointer-events:none;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><filter id="n"><feTurbulence baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.02" /></svg>');
+    opacity:0.28;mix-blend-mode:overlay;
   }
-  .slider{width:140px}
-  /* slideshow */
-  .gallery{position:fixed;left:20px;top:20px;width:220px;height:140px;overflow:hidden;border-radius:8px;border:1px solid rgba(0,255,102,0.08);z-index:3}
-  .gallery img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(0.06) contrast(1.02)}
-  /* modal */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10;visibility:hidden;opacity:0;transition:opacity .2s}
-  .modal.show{visibility:visible;opacity:1}
-  .modal .card{background:#0b0b0b;padding:20px;border-radius:12px;border:1px solid rgba(0,255,102,0.06);width:90%;max-width:560px;text-align:center}
-  .danger{color:#ff7777}
-  .hint{font-size:0.9rem;color:#9fffa0aa;margin-top:8px}
-  footer{position:fixed;left:0;bottom:0;width:100%;text-align:center;padding:8px;color:#0f0f0f;background:linear-gradient(180deg, transparent, rgba(0,0,0,0.4));z-index:1}
-  footer .credit{color:#00ff66aa;font-size:0.85rem}
-  /* responsive */
-  @media(max-width:520px){h1{font-size:1.6rem}.gallery{display:none}.panel{right:8px;bottom:8px}}
+
+  /* centered content */
+  .wrap{
+    position:relative;z-index:4;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;
+    text-align:center;
+  }
+
+  /* title with glitch effect */
+  .title {
+    font-size:3.2rem;
+    letter-spacing:2px;
+    line-height:1.05;
+    text-transform:uppercase;
+    position:relative;
+    display:inline-block;
+    padding:10px 18px;
+    color:var(--neon);
+    text-shadow:0 0 8px rgba(0,255,102,0.18), 0 0 28px rgba(0,255,102,0.08);
+  }
+  .title::before, .title::after{
+    content:attr(data-text);
+    position:absolute;left:0;top:0;
+    width:100%;height:100%;
+    clip-path:polygon(0 0,100% 0,100% 45%,0 45%);
+    opacity:0.8;
+  }
+  .title::before{ transform:translate(4px,-4px);color:var(--neon-2);mix-blend-mode:screen;opacity:0.6; }
+  .title::after{ transform:translate(-6px,6px);color:#00aa44;mix-blend-mode:screen;opacity:0.45; clip-path:polygon(0 55%,100% 55%,100% 100%,0 100%);}
+  @keyframes jitter { 0%{transform:translateX(0)} 25%{transform:translateX(2px)} 50%{transform:translateX(-2px)} 75%{transform:translateX(1px)} 100%{transform:translateX(0)} }
+  .title:hover{ animation:jitter 0.45s linear infinite; }
+
+  /* subtitle */
+  .sub { color:var(--muted); margin-top:8px; font-size:0.98rem }
+
+  /* glass cards */
+  .cards { display:flex; gap:18px; margin-top:34px; z-index:4; flex-wrap:wrap; justify-content:center; }
+  .card {
+    width:260px; min-height:120px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(0,255,102,0.06);
+    border-radius:12px; padding:16px; text-align:left;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px);
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform:translateY(-8px); box-shadow:0 18px 50px rgba(0,255,102,0.08); }
+  .card h3 { color:var(--neon-2); font-size:1.05rem; margin-bottom:6px }
+  .card p { color:#9fffa0aa; font-size:0.9rem; line-height:1.2 }
+
+  /* terminal console */
+  .terminal {
+    margin-top:28px; width:760px; max-width:95%; text-align:left;
+    border-radius:10px; overflow:hidden; border:1px solid rgba(0,255,102,0.06);
+    background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.4));
+    box-shadow: inset 0 0 40px rgba(0,255,102,0.02);
+  }
+  .term-header { padding:8px 12px; display:flex; gap:8px; align-items:center; }
+  .dot { width:12px;height:12px;border-radius:50%; background:rgba(255,0,0,0.5); box-shadow:0 0 8px rgba(255,0,0,0.06) }
+  .term-body { padding:18px; font-family:monospace; color:var(--neon); font-size:0.95rem; min-height:80px; line-height:1.4; white-space:pre-wrap }
+  .caret{ display:inline-block; width:10px; height:18px; background:var(--neon); margin-left:6px; vertical-align:middle; animation:blink 1s steps(1) infinite; }
+  @keyframes blink {50%{opacity:0}}
+
+  /* footer small */
+  footer { position:fixed; right:12px; bottom:10px; z-index:6; color:#00ff66aa; font-size:0.78rem }
+
+  /* scanline/flicker */
+  .scanline { position:fixed; inset:0; z-index:2; pointer-events:none; background-image: linear-gradient(rgba(0,0,0,0) 49%, rgba(0,0,0,0.03) 50%, rgba(0,0,0,0) 51%); background-size:100% 4px; mix-blend-mode:multiply; opacity:0.35 }
+  .vignette { position:fixed; inset:0; pointer-events:none; z-index:2; background: radial-gradient(ellipse at center, rgba(0,120,0,0.05), rgba(0,0,0,0.6)); mix-blend-mode:multiply; }
+
+  /* responsive tweaks */
+  @media(max-width:720px){
+    .title{font-size:1.6rem}
+    .cards{gap:10px}
+    .card{width:calc(50% - 12px)}
+    .term-body{font-size:0.86rem}
+  }
+  @media(max-width:420px){
+    .card{width:100%}
+    .cards{flex-direction:column;align-items:stretch}
+  }
 </style>
 </head>
 <body>
 
 <canvas id="matrix"></canvas>
+<div class="noise"></div>
+<div class="vignette"></div>
+<div class="scanline"></div>
 
-<div class="gallery" id="gallery">
-  <img src="images/1.jpg" alt="img1" id="gimg">
-</div>
-
-<div class="page">
-  <header>
-    <h1>Добро пожаловать в систему, Тохир <span class="cursor"></span></h1>
-    <div class="subtitle">⚡ Авторизуйся: <span id="user">root@tohir</span></div>
-  </header>
-
-  <div class="controls">
-    <button class="btn" id="playBg">▶ Включить фон (звук)</button>
-    <button class="btn" id="muteToggle">🔇 Мьют</button>
-    <button class="btn" id="prankBtn">💣 Запустить Пранк</button>
-    <a class="btn" href="#" id="dlBtn" download="tohir_config.zip">⬇ Скачать конфиг</a>
+<div class="wrap">
+  <div>
+    <div class="title" data-text="Добро пожаловать, Тохир">Добро пожаловать, Тохир</div>
+    <div class="sub">Система: <strong style="color:var(--neon-2)">root@tohir</strong> • Статус: <span style="color:#9fffa0a6">Наблюдение онлайн</span></div>
   </div>
 
-  <div class="small" style="margin-top:12px">Нажми <b>Включить фон</b>, чтобы активировать аудио. Пранк включится только после подтверждения.</div>
-</div>
+  <div class="cards" role="region" aria-label="Информация">
+    <div class="card">
+      <h3>Доступ</h3>
+      <p>Локальный хаб: <strong style="color:var(--neon)">127.0.0.1</strong> • Web: <strong style="color:var(--neon)">GitHub Pages</strong></p>
+    </div>
+    <div class="card">
+      <h3>Статистика</h3>
+      <p>Загрузка интерфейса: <strong style="color:var(--neon)">OK</strong> • FPS эффекта: <strong style="color:var(--neon)">60+</strong></p>
+    </div>
+    <div class="card">
+      <h3>Совет</h3>
+      <p>Нажми на заголовок для эффекта глитча. Экспериментируй с цветами и картинками — всё кастомизируется.</p>
+    </div>
+  </div>
 
-<!-- floating panel -->
-<div class="panel" role="region" aria-label="controls">
-  Громкость:<br>
-  <input type="range" id="vol" class="slider" min="0" max="100" value="20"> <span id="volLabel">20%</span>
-  <div style="margin-top:8px" class="small">Слайдшоу картинок → слева</div>
-</div>
-
-<!-- modal confirm for prank -->
-<div class="modal" id="confirmModal">
-  <div class="card">
-    <h3 class="danger">Внимание!</h3>
-    <p>Пранк включает громкий звук и резкий эффект. Это может испугать людей — не включай близким с сердечными проблемами или детям.</p>
-    <p class="hint">Установлена громкость по умолчанию: <b id="modalVol">20%</b></p>
-    <div style="margin-top:12px">
-      <button class="btn" id="confirmPrank">Да, запустить (безопасно)</button>
-      <button class="btn" id="cancelPrank" style="margin-left:8px">Отмена</button>
+  <div class="terminal" role="region" aria-label="Консоль">
+    <div class="term-header">
+      <div class="dot" style="background:#ff605c"></div>
+      <div class="dot" style="background:#ffbd44"></div>
+      <div class="dot" style="background:#00ca56"></div>
+    </div>
+    <div class="term-body" id="term">
+      <span id="typed"></span><span class="caret" id="caret"></span>
     </div>
   </div>
 </div>
 
-<!-- hidden audio elements -->
-<audio id="bgAudio" loop preload="metadata">
-  <source src="bg-music.mp3" type="audio/mpeg">
-</audio>
-<audio id="screamAudio" preload="metadata">
-  <source src="scream.mp3" type="audio/mpeg">
-</audio>
-
-<footer><span class="credit">Tohir's Hack Zone • Сделано с уважением — тестируй ответственно</span></footer>
+<footer>Tohir • Хакерский стиль • Сделано с уважением</footer>
 
 <script>
-/* ========== MATRIX ========== */
+/* MATRIX EFFECT */
 const canvas = document.getElementById('matrix');
 const ctx = canvas.getContext('2d');
 let dpr = window.devicePixelRatio || 1;
-
-function resizeCanvas(){
+function initCanvas(){
   dpr = window.devicePixelRatio || 1;
   canvas.width = innerWidth * dpr;
   canvas.height = innerHeight * dpr;
   canvas.style.width = innerWidth + 'px';
   canvas.style.height = innerHeight + 'px';
   ctx.scale(dpr, dpr);
-  columns = Math.floor(innerWidth / fontSize);
-  drops.length = columns;
-  for(let i=0;i<columns;i++){ if(!drops[i]) drops[i]=Math.random()*-50; }
 }
-const letters = '01АBCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$%^&*()[]{}<>/|';
-const fontSize = 14;
-let columns = Math.floor(window.innerWidth / fontSize);
-const drops = Array(columns).fill(1);
+initCanvas();
+window.addEventListener('resize', ()=>{
+  initCanvas();
+  prepareDrops();
+});
 
-function drawMatrix(){
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+const letters = '01АBCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$%&*()[]{}<>/|';
+const fontSize = Math.max(12, Math.floor(innerWidth / 140)); // scale a bit
+let columns = Math.floor(innerWidth / fontSize);
+let drops = [];
+function prepareDrops(){
+  columns = Math.floor(innerWidth / fontSize);
+  drops = [];
+  for(let i=0;i<columns;i++){ drops[i] = Math.random() * -100; }
+}
+prepareDrops();
+
+function draw(){
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
   ctx.fillRect(0,0,canvas.width/dpr, canvas.height/dpr);
   ctx.fillStyle = '#00ff66';
   ctx.font = fontSize + 'px monospace';
   for(let i=0;i<drops.length;i++){
     const text = letters.charAt(Math.floor(Math.random()*letters.length));
-    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-    if(drops[i]*fontSize > canvas.height/dpr && Math.random() > 0.975) drops[i]=0;
-    drops[i]++;
+    ctx.fillText(text, i * fontSize, drops[i]);
+    if(drops[i] > innerHeight + Math.random()*100) drops[i] = Math.random()*-100;
+    drops[i] += fontSize * 0.9;
   }
 }
-resizeCanvas();
-setInterval(drawMatrix, 45);
-window.addEventListener('resize', resizeCanvas);
+setInterval(draw, 45);
 
-/* ========== TYPE EFFECT (username) ========== */
-const userEl = document.getElementById('user');
-const username = 'root@tohir';
-let uidx=0;
-function typeUser(){
-  if(uidx <= username.length){
-    userEl.textContent = username.slice(0, uidx++);
-    setTimeout(typeUser, 80);
+/* TYPEWRITER FOR CONSOLE */
+const textLines = [
+  "Инициализация системы...",
+  "Загрузка модулей: █████████▒ 92%",
+  "Подключение к сети... OK",
+  "Сканирование портов: 22, 80, 443 ...",
+  "Автор: root@tohir • Режим: демонстрационный",
+  "Состояние: Наблюдение активно"
+];
+const typedEl = document.getElementById('typed');
+let line = 0, char = 0;
+function typeNext(){
+  if(line >= textLines.length){ 
+    setTimeout(()=>{ typedEl.textContent = ''; line = 0; char = 0; typeNext(); }, 2500);
+    return;
+  }
+  const current = textLines[line];
+  if(char <= current.length){
+    typedEl.textContent = current.slice(0, char);
+    char++;
+    setTimeout(typeNext, 36 + Math.random()*40);
   } else {
-    setTimeout(()=>{uidx=0;typeUser()}, 2000);
+    // move to next line with small pause and preserve previous lines
+    const preserve = textLines.slice(0, line+1).join('\n');
+    typedEl.textContent = preserve;
+    line++; char = 0;
+    setTimeout(typeNext, 700);
   }
 }
-typeUser();
+typeNext();
 
-/* ========== GALLERY SLIDESHOW ========== */
-const galleryImg = document.getElementById('gimg');
-const galleryFiles = ['images/1.jpg','images/2.jpg','images/3.jpg'];
-let gi = 0;
-function nextImg(){
-  gi = (gi+1) % galleryFiles.length;
-  galleryImg.src = galleryFiles[gi];
-}
-setInterval(nextImg, 3200);
+/* TITLE GLITCH ON CLICK */
+const title = document.querySelector('.title');
+title.addEventListener('click', ()=> {
+  title.style.transition = 'transform 0.12s ease';
+  title.style.transform = 'skewX(-6deg) scale(1.02)';
+  setTimeout(()=> title.style.transform = '', 180);
+  // quick color flash
+  title.style.textShadow = '0 0 30px rgba(0,255,102,0.35)';
+  setTimeout(()=> title.style.textShadow = '0 0 8px rgba(0,255,102,0.18)', 350);
+});
 
-/* ========== AUDIO CONTROLS ========== */
-const bg = document.getElementById('bgAudio');
-const scream = document.getElementById('screamAudio');
-const playBgBtn = document.getElementById('playBg');
-const muteBtn = document.getElementById('muteToggle');
-const vol = document.getElementById('vol');
-const volLabel = document.getElementById('volLabel');
+/* SMALL RANDOM FLICKER EFFECT */
+setInterval(()=> {
+  const nv = 0.92 + Math.random()*0.16;
+  document.body.style.opacity = nv;
+  setTimeout(()=> document.body.style.opacity = 1, 120);
+}, 3500);
 
-function setVolumeFromSlider(){
-  const v = Number(vol.value)/100;
-  bg.volume = v;
-  scream.volume = v;
-  volLabel.textContent = vol.value + '%';
-  document.getElementById('modalVol').textContent = vol.value + '%';
-}
-vol.addEventListener('input', setVolumeFromSlider);
-setVolumeFromSlider();
-
-playBgBtn.addEventListener('click', () => {
-  // браузеры требуют взаимодействие — клик выполняет play
-  if(bg.paused){
-    bg.play().catch(()=>{ alert('Браузер заблокировал авто-воспроизведение. Нажми ещё раз.'); });
-    playBgBtn.textContent = '⏸ Остановить фон';
-  } else {
-    bg.pause();
-    playBgBtn.textContent = '▶ Включить фон (звук)';
+/* Accessibility: allow space to pause animation loop by toggling matrix draw */
+let matrixOn = true;
+document.addEventListener('keydown', (e)=> {
+  if(e.code === 'Space'){
+    matrixOn = !matrixOn;
+    if(matrixOn) window.matrixInterval = setInterval(draw, 45);
+    else clearInterval(window.matrixInterval);
   }
 });
-muteBtn.addEventListener('click', () => {
-  bg.muted = !bg.muted;
-  scream.muted = bg.muted;
-  muteBtn.textContent = bg.muted ? '🔈 Включить звук' : '🔇 Мьют';
-});
-
-/* ========== PRANK (с подтверждением) ========== */
-const prankBtn = document.getElementById('prankBtn');
-const modal = document.getElementById('confirmModal');
-const confirmPrank = document.getElementById('confirmPrank');
-const cancelPrank = document.getElementById('cancelPrank');
-
-prankBtn.addEventListener('click', ()=> {
-  // показываем модалку с предупреждением
-  modal.classList.add('show');
-});
-
-cancelPrank.addEventListener('click', ()=> modal.classList.remove('show'));
-
-confirmPrank.addEventListener('click', ()=> {
-  modal.classList.remove('show');
-  // резкое визуальное наложение + звук
-  // создаём fullscreen элемент
-  const overlay = document.createElement('div');
-  overlay.style.position='fixed';
-  overlay.style.inset='0';
-  overlay.style.zIndex='9999';
-  overlay.style.background='#000';
-  overlay.style.display='flex';
-  overlay.style.alignItems='center';
-  overlay.style.justifyContent='center';
-  overlay.style.flexDirection='column';
-  overlay.style.transition='opacity 0.3s';
-  overlay.innerHTML = '<img src="images/3.jpg" style="max-width:90%;max-height:90%;border-radius:6px;box-shadow:0 0 40px rgba(255,0,0,0.12)"><div style="color:var(--neon);margin-top:18px;font-size:1.6rem">Пранк активирован</div>';
-  document.body.appendChild(overlay);
-
-  // play scream
-  scream.currentTime = 0;
-  scream.play().catch(()=>{ alert('Браузер заблокировал воспроизведение звука — нажми "Включить фон" сначала.'); });
-
-  // эффект вспышки + камера shake (css)
-  overlay.animate([{filter:'brightness(0.2)'},{filter:'brightness(2)'}],{duration:180,iterations:2});
-  document.body.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(6px)'},{transform:'translateY(0)'}],{duration:300,iterations:4});
-
-  // удаляем overlay через 3.5s
-  setTimeout(()=>{ overlay.style.opacity='0'; setTimeout(()=>overlay.remove(),400); }, 3500);
-});
-
-/* ========== DOWNLOAD BUTTON placeholder ========= */
-document.getElementById('dlBtn').addEventListener('click', function(e){
-  // если у тебя есть файл tohir_config.zip в репозитории — он скачивается.
-  // иначе показываем подсказку.
-  // (при деплое на GitHub: помести zip в root или укажи правильный путь)
-  const fakePath = 'tohir_config.zip';
-  // проверка — делаем попытку загрузить (большинство браузеров покажут 404)
-  // оставляем действие по умолчанию
-});
+window.matrixInterval = setInterval(draw, 45);
 </script>
+
 </body>
 </html>
