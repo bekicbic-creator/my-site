@@ -3,375 +3,179 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Tohir — Хакерская зона (интерактив)</title>
+<title>Tohir — Хакерская зона (камера)</title>
 <style>
   :root{
     --bg:#000;
-    --text:#00ff66;
-    --accent:#00ff66;
-    --card: rgba(255,255,255,0.03);
+    --neon:#00ff66;
+    --muted:#9fffa0a6;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
-    min-height:100vh;
-    background: linear-gradient(180deg, rgba(0,0,0,1), rgba(5,8,6,1));
-    color:var(--text);
-    font-family: "Courier New", monospace;
-    -webkit-font-smoothing:antialiased;
-    display:flex;align-items:center;justify-content:center;padding:24px;
+    min-height:100vh;background:#000;color:var(--neon);
+    font-family: "Courier New", monospace;display:flex;align-items:center;justify-content:center;padding:20px;
   }
-
-  .app {
-    width:100%;max-width:1100px;
-    position:relative; z-index:4;
+  .card{
+    width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(0,255,102,0.06);padding:20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.6);
   }
+  h1{font-size:1.6rem;text-align:center;margin-bottom:8px;text-shadow:0 0 12px rgba(0,255,102,0.06)}
+  p.lead{text-align:center;color:var(--muted);margin-bottom:14px}
+  .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .btn{padding:10px 14px;border-radius:10px;border:2px solid rgba(0,255,102,0.12);background:transparent;color:var(--neon);cursor:pointer;font-weight:700}
+  .btn.primary{background:linear-gradient(45deg,#00ff66,#00aaff);color:#001}
+  .btn.warn{background:linear-gradient(45deg,#ffb54d,#ff6b6b);color:#111}
+  .hint{text-align:center;color:var(--muted);font-size:0.9rem;margin-top:8px}
 
-  header { text-align:center; margin-bottom:18px }
-  h1 { font-size:2.2rem; color:var(--accent); text-shadow:0 0 14px rgba(0,255,102,0.08) }
-  p.lead { color: rgba(160,255,180,0.18); margin-top:6px }
-
-  .controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:18px 0 }
-  .btn {
-    border:1px solid rgba(255,255,255,0.06);
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    color:var(--text); padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700;
+  /* camera area */
+  .camera-wrap{display:none;margin-top:14px;border-radius:10px;overflow:hidden;border:3px solid rgba(0,255,102,0.06);background:#000}
+  iframe.cam{
+    width:100%;height:520px;border:0;background:#111;display:block;
   }
-  .btn.ghost { background:transparent; border:1px dashed rgba(255,255,255,0.04) }
-  .btn.accent { border-color: rgba(0,255,102,0.2); box-shadow:0 10px 30px rgba(0,255,102,0.03) }
+  .cam-fallback{padding:18px;text-align:center;color:var(--muted);background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45))}
+  .cam-actions{display:flex;gap:8px;justify-content:center;padding:12px;background:rgba(0,0,0,0.35)}
 
-  .layout { display:grid; grid-template-columns: 1fr 360px; gap:18px; align-items:start }
-  .left { min-height:360px; padding:16px; background:var(--card); border-radius:12px; border:1px solid rgba(0,255,102,0.05) }
-  .right { min-height:360px; padding:16px; background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35)); border-radius:12px; border:1px solid rgba(255,255,255,0.03) }
+  /* modal confirm */
+  .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999;visibility:hidden;opacity:0;transition:opacity .18s}
+  .modal.show{visibility:visible;opacity:1}
+  .overlay{position:absolute;inset:0;background:rgba(0,0,0,0.7)}
+  .modal-card{position:relative;background:#070707;padding:18px;border-radius:10px;border:1px solid rgba(0,255,102,0.06);width:92%;max-width:640px;z-index:2}
+  .modal-card h3{color:var(--neon);margin-bottom:8px}
+  .modal-card p{color:var(--muted);font-size:0.94rem}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
 
-  .title-small { color:rgba(160,255,180,0.18); font-size:0.9rem; margin-bottom:8px }
-
-  /* gallery */
-  .gallery { display:grid; grid-template-columns:repeat(2, 1fr); gap:8px }
-  .gallery img { width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.03); transition:transform .25s }
-  .gallery img:hover { transform:scale(1.03) }
-
-  /* theme picker */
-  .themes { display:flex; gap:8px; margin-top:12px; justify-content:center }
-  .swatch { width:30px; height:30px; border-radius:6px; cursor:pointer; border:2px solid rgba(255,255,255,0.04) }
-
-  /* "camera" modal */
-  .modal { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1000; visibility:hidden; opacity:0; transition:opacity .2s }
-  .modal.show { visibility:visible; opacity:1 }
-  .overlay { position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.8)); backdrop-filter: blur(2px) }
-  .modal-card { position:relative; width:92%; max-width:920px; background:rgba(0,0,0,0.85); padding:12px; border-radius:10px; border:1px solid rgba(0,255,102,0.06); z-index:2 }
-  .modal-header { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px }
-  .modal-body { display:block; min-height:360px; max-height:72vh; overflow:auto; border-radius:8px; background: #000; padding:8px }
-
-  /* camera iframe placeholder */
-  .cam-iframe { width:100%; height:420px; border:0; border-radius:8px; background:#111; display:block }
-  .cam-sim { width:100%; height:420px; border-radius:8px; overflow:hidden; position:relative; background:#111; display:flex; align-items:center; justify-content:center }
-
-  /* simulated feed (slideshow) */
-  .sim-slide { position:absolute; inset:0; background-size:cover; background-position:center; transition:opacity .6s ease; opacity:0 }
-  .sim-slide.active { opacity:1 }
-
-  /* small tips */
-  .hint { color: rgba(160,255,180,0.14); font-size:0.9rem; margin-top:8px }
-
-  footer { margin-top:14px; text-align:center; color:rgba(160,255,180,0.12); font-size:0.85rem }
-
-  @media(max-width:980px){
-    .layout { grid-template-columns: 1fr }
-    .right { order:2 }
-  }
+  footer{margin-top:12px;text-align:center;color:var(--muted);font-size:0.85rem}
+  @media(max-width:720px){ iframe.cam{height:320px} }
 </style>
 </head>
 <body>
+  <div class="card">
+    <h1>Tohir — Демонстрация публичной камеры</h1>
+    <p class="lead">Нажми кнопку ниже — сайт попытается показать публичную камеру (легальный embed). Если встраивание запрещено — предложим открыть в новой вкладке.</p>
 
-<div class="app">
-  <header>
-    <h1>Tohir — Хакерская зона (интерактив)</h1>
-    <p class="lead">Кнопки, темы, галерея и безопасная демонстрация камеры — всё для эффекта «вау», но легально.</p>
-  </header>
-
-  <div class="controls">
-    <button class="btn accent" id="themeGreen">Зелёная (по умолчанию)</button>
-    <button class="btn" id="themePurple">Фиолетовая</button>
-    <button class="btn" id="themeRed">Красная</button>
-    <button class="btn" id="themeBlue">Синяя</button>
-    <button class="btn ghost" id="themeCustom">Пользовательская</button>
-    <button class="btn ghost" id="openCamera">Открыть "Камеру"</button>
-  </div>
-
-  <div class="layout">
-    <div class="left">
-      <div class="title-small">Галерея</div>
-      <div class="gallery" id="gallery">
-        <img src="images/1.jpg" alt="img1">
-        <img src="images/2.jpg" alt="img2">
-        <img src="images/3.jpg" alt="img3">
-        <img src="images/4.jpg" alt="img4">
-      </div>
-
-      <div class="title-small" style="margin-top:12px">Интерактив</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-        <button class="btn" id="glitchTitle">Глитч-заголовок</button>
-        <button class="btn" id="toggleMatrix">Вкл/выкл матрицу</button>
-        <button class="btn" id="flashScreen">Короткая вспышка</button>
-      </div>
-
-      <div class="hint">Подпиши свои изображения: если хочешь — замени файлы в папке images/ на свои фотки — и сайт автоматически покажет их.</div>
+    <div class="controls">
+      <button id="hackBtn" class="btn primary">Взломать камеру (демо)</button>
+      <button id="openDirect" class="btn">Открыть камеру в новой вкладке</button>
+      <button id="hideCam" class="btn warn">Скрыть</button>
     </div>
 
-    <div class="right">
-      <div class="title-small">Темы</div>
-      <div class="themes" style="justify-content:center">
-        <div class="swatch" style="background:#00ff66" data-theme="green"></div>
-        <div class="swatch" style="background:#ad5cff" data-theme="purple"></div>
-        <div class="swatch" style="background:#ff4d4d" data-theme="red"></div>
-        <div class="swatch" style="background:#4da6ff" data-theme="blue"></div>
+    <div id="cameraArea" class="camera-wrap" aria-live="polite">
+      <iframe id="camFrame" class="cam" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
+      <div class="cam-actions">
+        <button id="openDirectFromArea" class="btn">Открыть в новой вкладке</button>
+        <button id="closeArea" class="btn">Закрыть</button>
       </div>
-
-      <div style="margin-top:12px">
-        <div class="title-small">Настройки шрифта</div>
-        <label style="display:block;margin-top:6px">
-          Размер шрифта:
-          <input type="range" id="fontSize" min="12" max="22" value="14" style="width:100%;margin-top:6px">
-        </label>
+      <div id="camFallback" class="cam-fallback" style="display:none;">
+        <div>Встраивание заблокировано. <a id="directLink" href="#" target="_blank" style="color:var(--neon)">Открыть камеру в новой вкладке</a></div>
       </div>
+    </div>
 
-      <div style="margin-top:12px">
-        <div class="title-small">Превью</div>
-        <div style="padding:12px;background:rgba(0,0,0,0.35);border-radius:8px;border:1px solid rgba(255,255,255,0.03)">
-          <div style="font-size:1.05rem;color:var(--accent)">root@tohir</div>
-          <div style="margin-top:6px;color:rgba(160,255,180,0.12)">Интерактивный превью у тебя в правой панели — меняй темы и смотри результат.</div>
-        </div>
+    <div class="hint">Используются только публичные камеры. Не подключайся к чужим частным стримам.</div>
+    <footer>Если хочешь другую камеру — пришли ссылку на страницу камеры, я подставлю её в код (или укажу точную embed-ссылку).</footer>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div class="modal" id="confirmModal" role="dialog" aria-hidden="true">
+    <div class="overlay"></div>
+    <div class="modal-card" role="document">
+      <h3>Подтвердить действие</h3>
+      <p>Ты собираешься открыть публичную камеру. Это легальная публичная трансляция (не взлом). Нажми «Да», чтобы продолжить.</p>
+      <div class="modal-actions">
+        <button id="confirmYes" class="btn primary">Да, показать</button>
+        <button id="confirmNo" class="btn">Отмена</button>
       </div>
     </div>
   </div>
-
-  <footer>Сделано для демо — не взламывай чужое. Чтобы вставить реальную публичную камеру: см. инструкции ниже.</footer>
-</div>
-
-<!-- CAMERA MODAL -->
-<div class="modal" id="camModal" role="dialog" aria-hidden="true">
-  <div class="overlay"></div>
-  <div class="modal-card" role="document">
-    <div class="modal-header">
-      <div style="font-weight:700;color:var(--accent)">Демонстрация камеры</div>
-      <div>
-        <button class="btn" id="closeModal">Закрыть</button>
-      </div>
-    </div>
-
-    <div class="modal-body" id="modalBody">
-      <!-- If user has embed code, developer can replace innerHTML via console or by editing index.html -->
-      <div style="color:#9fffa0aa;margin-bottom:8px">Выберите: показать <strong>легальный embed</strong> (вставьте код от сервиса) или безопасную <strong>симуляцию</strong>.</div>
-
-      <!-- PLACE FOR EMBED (if provided) -->
-      <div id="embedArea" style="margin-bottom:12px">
-        <!-- Example of embedding: replace the iframe.src with embed URL from a legal webcam provider -->
-        <!-- If you want to use a real public webcam and provider дает iframe embed — вставь сюда iframe с src. -->
-        <!-- Example (NOT real, placeholder): <iframe class="cam-iframe" src="https://your-provider-embed-url" allowfullscreen></iframe> -->
-      </div>
-
-      <!-- SIMULATION -->
-      <div class="cam-sim" id="simArea" aria-label="Simulated camera feed">
-        <div class="sim-slide active" style="background-image:url('images/1.jpg')"></div>
-        <div class="sim-slide" style="background-image:url('images/2.jpg')"></div>
-        <div class="sim-slide" style="background-image:url('images/3.jpg')"></div>
-        <div class="sim-slide" style="background-image:url('images/4.jpg')"></div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
-        <button class="btn" id="useEmbed">Показать embed (вставь код вручную)</button>
-        <button class="btn accent" id="useSim">Показать симуляцию</button>
-      </div>
-
-      <div class="hint" style="margin-top:10px">
-        Где взять легальный embed камеры: сайты, которые официально дают код для вставки (iframe), например EarthCam, некоторые городские webcam-проекты, сайты туристических вебкамер. Никогда не пытайся подключаться к IP-камерам через прямой доступ без разрешения — это незаконно.
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
-/* =========== THEMES =========== */
-function setTheme(colors){
-  document.documentElement.style.setProperty('--bg', colors.bg || '#000');
-  document.documentElement.style.setProperty('--text', colors.text || '#00ff66');
-  document.documentElement.style.setProperty('--accent', colors.accent || '#00ff66');
-  document.documentElement.style.setProperty('--card', colors.card || 'rgba(255,255,255,0.03)');
-}
-document.getElementById('themeGreen').addEventListener('click', ()=> setTheme({bg:'#000', text:'#00ff66', accent:'#00ff66'}));
-document.getElementById('themePurple').addEventListener('click', ()=> setTheme({bg:'#060008', text:'#ad5cff', accent:'#ad5cff'}));
-document.getElementById('themeRed').addEventListener('click', ()=> setTheme({bg:'#100000', text:'#ff6b6b', accent:'#ff6b6b'}));
-document.getElementById('themeBlue').addEventListener('click', ()=> setTheme({bg:'#001020', text:'#66b3ff', accent:'#66b3ff'}));
-document.querySelectorAll('.swatch').forEach(s=>{
-  s.addEventListener('click', ()=> {
-    const t = s.dataset.theme;
-    if(t==='green') document.getElementById('themeGreen').click();
-    if(t==='purple') document.getElementById('themePurple').click();
-    if(t==='red') document.getElementById('themeRed').click();
-    if(t==='blue') document.getElementById('themeBlue').click();
-  });
-});
-document.getElementById('themeCustom').addEventListener('click', ()=>{
-  const c = prompt('Введи цвет акцента в hex (например #ff00aa):','#00ff66');
-  if(c) setTheme({accent:c, text:c});
-});
+/*
+  Как это работает:
+  - EMBED_URL: пытаемся вставить этот URL в iframe (часто провайдеры дают спец. embed URL).
+  - DIRECT_URL: открываем в новой вкладке, если встраивание заблокировано.
+  Если хочешь другую камеру — пришли прямую ссылку на страницу камеры (я подскажу embed).
+*/
 
-/* =========== FONT SIZE CONTROL =========== */
-const fontSizeSlider = document.getElementById('fontSize');
-fontSizeSlider.addEventListener('input', ()=> {
-  document.documentElement.style.setProperty('--font-size', fontSizeSlider.value + 'px');
-  document.body.style.fontSize = fontSizeSlider.value + 'px';
-});
+/* ------------------ НАСТРОЙКИ: подставь сюда камеру, если у тебя своя ------------------ */
+// Пример — публичная страница SkylineWebcams (Эйфелева башня). Иногда сайт блокирует встраивание.
+// Если хочешь другую камеру — скажи ссылку, я подскажу точную embed-ссылку.
+const EMBED_URL = "https://www.skylinewebcams.com/en/webcam/france/ile-de-france/paris/eiffel-tower.html";
+const DIRECT_URL = "https://www.skylinewebcams.com/en/webcam/france/ile-de-france/paris/eiffel-tower.html";
+/* ------------------------------------------------------------------------------------ */
 
-/* =========== GALLERY interactions ========== */
-document.querySelectorAll('#gallery img').forEach(img=>{
-  img.addEventListener('click', ()=> {
-    // open modal with image preview (simple)
-    const url = img.src;
-    const modal = document.getElementById('camModal');
-    const embedArea = document.getElementById('embedArea');
-    const simArea = document.getElementById('simArea');
-    // show image in simArea as one-frame feed
-    simArea.querySelectorAll('.sim-slide').forEach(s=> s.classList.remove('active'));
-    const first = simArea.querySelector('.sim-slide');
-    first.style.backgroundImage = `url('${url}')`;
-    first.classList.add('active');
-    embedArea.innerHTML = '';
-    simArea.style.display = 'flex';
-    modal.classList.add('show');
-  });
+const hackBtn = document.getElementById('hackBtn');
+const openDirect = document.getElementById('openDirect');
+const confirmModal = document.getElementById('confirmModal');
+const confirmYes = document.getElementById('confirmYes');
+const confirmNo = document.getElementById('confirmNo');
+
+const cameraArea = document.getElementById('cameraArea');
+const camFrame = document.getElementById('camFrame');
+const camFallback = document.getElementById('camFallback');
+const directLink = document.getElementById('directLink');
+const openDirectFromArea = document.getElementById('openDirectFromArea');
+const closeArea = document.getElementById('closeArea');
+const hideCamBtn = document.getElementById('hideCam');
+
+directLink.href = DIRECT_URL;
+
+// открыть напрямую в новой вкладке (без попытки встраивания)
+openDirect.addEventListener('click', ()=> {
+  window.open(DIRECT_URL, '_blank');
 });
 
-/* =========== CAMERA modal logic =========== */
-const camModal = document.getElementById('camModal');
-const openCameraBtn = document.getElementById('openCamera');
-const closeModal = document.getElementById('closeModal');
-const useEmbed = document.getElementById('useEmbed');
-const useSim = document.getElementById('useSim');
-const embedArea = document.getElementById('embedArea');
-const simArea = document.getElementById('simArea');
-
-openCameraBtn.addEventListener('click', ()=> {
-  // Show modal initially with simArea by default
-  embedArea.innerHTML = '';
-  document.querySelectorAll('.sim-slide').forEach((s,i)=> s.classList.toggle('active', i===0));
-  simArea.style.display = 'flex';
-  camModal.classList.add('show');
-  camModal.setAttribute('aria-hidden','false');
+// открывает модалку подтверждения
+hackBtn.addEventListener('click', ()=> {
+  confirmModal.classList.add('show');
+  confirmModal.setAttribute('aria-hidden','false');
 });
 
-closeModal.addEventListener('click', ()=> {
-  camModal.classList.remove('show');
-  camModal.setAttribute('aria-hidden','true');
-  embedArea.innerHTML = ''; // clear any iframe
+// отмена
+confirmNo.addEventListener('click', ()=> {
+  confirmModal.classList.remove('show');
+  confirmModal.setAttribute('aria-hidden','true');
 });
 
-/* If user chooses 'Показать embed' — we provide an input where they can paste iframe HTML */
-useEmbed.addEventListener('click', ()=> {
-  embedArea.innerHTML = `
-    <div style="margin-bottom:8px;color:#9fffa0aa">Вставь iframe-код публичного провайдера (или URL):</div>
-    <textarea id="embedInput" style="width:100%;height:120px;background:#000;color:var(--text);border:1px solid rgba(255,255,255,0.04);padding:8px"></textarea>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
-      <button class="btn" id="applyEmbed">Показать</button>
-    </div>
-  `;
-  simArea.style.display = 'none';
-  document.getElementById('applyEmbed').addEventListener('click', ()=>{
-    const val = document.getElementById('embedInput').value.trim();
-    if(!val){ alert('Вставь код или URL'); return; }
-    // If value starts with <iframe — insert directly, else attempt to create iframe from URL
-    if(val.startsWith('<iframe')){
-      embedArea.innerHTML = val;
-    } else {
-      // treat as URL
-      const iframe = document.createElement('iframe');
-      iframe.className = 'cam-iframe';
-      iframe.src = val;
-      iframe.loading = 'lazy';
-      embedArea.innerHTML = '';
-      embedArea.appendChild(iframe);
+// подтверждение — пробуем вставить embed в iframe
+confirmYes.addEventListener('click', ()=> {
+  confirmModal.classList.remove('show');
+  confirmModal.setAttribute('aria-hidden','true');
+
+  // показываем область
+  cameraArea.style.display = 'block';
+  camFallback.style.display = 'none';
+  camFrame.style.display = 'block';
+
+  // ставим iframe.src
+  camFrame.src = EMBED_URL;
+
+  // ставим таймер: если iframe не загрузился за 5 секунд, показываем fallback (и ссылку откроется в новой вкладке)
+  let loaded = false;
+  const onLoad = ()=> { loaded = true; camFallback.style.display = 'none'; };
+  camFrame.addEventListener('load', onLoad, { once: true });
+
+  // fallback по таймауту (к примеру, встраивание блокировано)
+  const t = setTimeout(()=> {
+    if(!loaded){
+      // скрыть iframe и показать текст с кнопкой открыть в новой вкладке
+      try { camFrame.style.display = 'none'; } catch(e){}
+      camFallback.style.display = 'block';
     }
-  });
+  }, 4000);
 });
 
-/* useSim: ensure simulated slideshow is visible and cycles images */
-useSim.addEventListener('click', ()=> {
-  embedArea.innerHTML = '';
-  simArea.style.display = 'flex';
-});
+// кнопки в области камеры
+openDirectFromArea.addEventListener('click', ()=> { window.open(DIRECT_URL, '_blank'); });
+closeArea.addEventListener('click', ()=> { cameraArea.style.display = 'none'; camFrame.src = ''; camFallback.style.display = 'none'; });
+hideCamBtn.addEventListener('click', ()=> { cameraArea.style.display = 'none'; camFrame.src = ''; camFallback.style.display = 'none'; });
 
-/* SIMULATED FEED rotation */
-let simIndex = 0;
-const simSlides = document.querySelectorAll('.sim-slide');
-function nextSim(){
-  simSlides.forEach(s=> s.classList.remove('active'));
-  simIndex = (simIndex + 1) % simSlides.length;
-  simSlides[simIndex].classList.add('active');
-}
-let simInterval = setInterval(nextSim, 2200);
-
-/* =========== extra UI interactions ========== */
-document.getElementById('glitchTitle').addEventListener('click', ()=>{
-  const t = document.querySelector('h1');
-  t.style.transform = 'skewX(-8deg) scale(1.02)';
-  t.style.textShadow = '0 0 40px rgba(255,255,255,0.06)';
-  setTimeout(()=>{ t.style.transform=''; t.style.textShadow=''; }, 350);
-});
-let matrixOn = true;
-document.getElementById('toggleMatrix').addEventListener('click', ()=> {
-  matrixOn = !matrixOn;
-  if(!matrixOn) { clearInterval(window._matrixInterval); document.getElementById('matrixCanvas')?.remove(); }
-  else { startMatrix(); }
-});
-document.getElementById('flashScreen').addEventListener('click', ()=> {
-  const flash = document.createElement('div');
-  flash.style.position='fixed'; flash.style.inset='0'; flash.style.background='#fff'; flash.style.opacity='0.06'; flash.style.zIndex='9999';
-  document.body.appendChild(flash);
-  setTimeout(()=>{ flash.style.opacity='0'; setTimeout(()=>flash.remove(),250); }, 160);
-});
-
-/* =========== MATRIX BG (lightweight) =========== */
-function startMatrix(){
-  // simple canvas matrix effect appended to body with id matrixCanvas
-  if(document.getElementById('matrixCanvas')) return;
-  const canvas = document.createElement('canvas');
-  canvas.id = 'matrixCanvas';
-  canvas.style.position='fixed';
-  canvas.style.inset='0';
-  canvas.style.zIndex = 0;
-  canvas.style.pointerEvents='none';
-  document.body.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-  let w,h;
-  function resize(){
-    w = canvas.width = innerWidth;
-    h = canvas.height = innerHeight;
+/* accessibility: ESC закрывает модалку и камеру */
+document.addEventListener('keydown', (e)=> {
+  if(e.key === 'Escape'){
+    confirmModal.classList.remove('show');
+    cameraArea.style.display = 'none';
   }
-  resize();
-  window.addEventListener('resize', resize);
-  const cols = Math.floor(innerWidth / 16);
-  const drops = new Array(cols).fill(0);
-  const letters = '01АBCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$%&*()';
-  function draw(){
-    ctx.fillStyle = 'rgba(0,0,0,0.06)';
-    ctx.fillRect(0,0,w,h);
-    ctx.fillStyle = 'rgba(0,255,102,0.7)';
-    ctx.font = '13px monospace';
-    for(let i=0;i<drops.length;i++){
-      const text = letters.charAt(Math.floor(Math.random()*letters.length));
-      ctx.fillText(text, i*16, drops[i]*16);
-      if(drops[i]*16 > h && Math.random() > 0.98) drops[i] = 0;
-      drops[i]++;
-    }
-  }
-  window._matrixInterval = setInterval(draw,40);
-}
-startMatrix();
-
-/* accessibility: close modal on Esc */
-document.addEventListener('keydown', (e)=>{
-  if(e.key==='Escape'){ camModal.classList.remove('show'); }
 });
 </script>
+
 </body>
 </html>
