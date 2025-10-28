@@ -78,87 +78,9 @@
   Громкость:<br>
   <input type="range" id="vol" class="slider" min="0" max="100" value="20"> <span id="volLabel">20%</span>
   <div style="margin-top:8px" class="small">Слайдшоу картинок → слева</div>
-</div><!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Хакерская зона Тохира — Пранк-мод</title>
-<style>
-  :root{
-    --neon: #00ff66;
-    --neon-bright: #7bff9a;
-    --bg: #000;
-    --glass: rgba(0,0,0,0.45);
-  }
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--neon);font-family: 'Courier New', monospace;overflow:hidden;}
-  canvas#matrix{position:fixed;inset:0;z-index:0;}
-  .page{
-    position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:20px;
-    backdrop-filter: blur(0px);
-  }
-  header{text-align:center}
-  h1{font-size:2.2rem;margin:0 0 8px;text-shadow:0 0 12px rgba(0,255,102,0.12),0 0 25px rgba(0,255,102,0.06);}
-  .subtitle{color:#00cc66aa;margin-bottom:18px}
-  .cursor{display:inline-block;background:var(--neon);width:8px;height:22px;vertical-align:middle;margin-left:8px;animation:blink 1s steps(1) infinite}
-  @keyframes blink{50%{opacity:0}}
-  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:14px}
-  .btn{
-    background:transparent;border:2px solid var(--neon);color:var(--neon);padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:700;
-    box-shadow:0 0 14px rgba(0,255,102,0.05);transition:all .2s;
-  }
-  .btn:hover{background:var(--neon);color:#000;transform:translateY(-3px);box-shadow:0 0 28px rgba(0,255,102,0.18)}
-  .small{font-size:0.9rem;color:#9fffa0aa}
-  .panel{
-    position:fixed;right:20px;bottom:20px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(10,10,10,0.5));
-    border:1px solid rgba(0,255,102,0.08);padding:12px;border-radius:10px;z-index:5;
-  }
-  .slider{width:140px}
-  /* slideshow */
-  .gallery{position:fixed;left:20px;top:20px;width:220px;height:140px;overflow:hidden;border-radius:8px;border:1px solid rgba(0,255,102,0.08);z-index:3}
-  .gallery img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(0.06) contrast(1.02)}
-  /* modal */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10;visibility:hidden;opacity:0;transition:opacity .2s}
-  .modal.show{visibility:visible;opacity:1}
-  .modal .card{background:#0b0b0b;padding:20px;border-radius:12px;border:1px solid rgba(0,255,102,0.06);width:90%;max-width:560px;text-align:center}
-  .danger{color:#ff7777}
-  .hint{font-size:0.9rem;color:#9fffa0aa;margin-top:8px}
-  footer{position:fixed;left:0;bottom:0;width:100%;text-align:center;padding:8px;color:#0f0f0f;background:linear-gradient(180deg, transparent, rgba(0,0,0,0.4));z-index:1}
-  footer .credit{color:#00ff66aa;font-size:0.85rem}
-  /* responsive */
-  @media(max-width:520px){h1{font-size:1.6rem}.gallery{display:none}.panel{right:8px;bottom:8px}}
-</style>
-</head>
-<body>
-
-<canvas id="matrix"></canvas>
-
-<div class="gallery" id="gallery">
-  <img src="images/1.jpg" alt="img1" id="gimg">
 </div>
 
-<div class="page">
-  <header>
-    <h1>Добро пожаловать в систему, Тохир <span class="cursor"></span></h1>
-    <div class="subtitle">⚡ Авторизуйся: <span id="user">root@tohir</span></div>
-  </header>
-
-  <div class="controls">
-    <button class="btn" id="playBg">▶ Включить фон (звук)</button>
-    <button class="btn" id="muteToggle">🔇 Мьют</button>
-    <button class="btn" id="prankBtn">💣 Запустить Пранк</button>
-    <a class="btn" href="#" id="dlBtn" download="tohir_config.zip">⬇ Скачать конфиг</a>
-  </div>
-
-  <div class="small" style="margin-top:12px">Нажми <b>Включить фон</b>, чтобы активировать аудио. Пранк включится только после подтверждения.</div>
-</div>
-
-<!-- floating panel -->
-<div class="panel" role="region" aria-label="controls">
-  Громкость:<br>
-  <input type="range" id="vol" class="slider" min="0" max="100" value="20"> <span id="volLabel">20%</span>
-  <div style="margin-top:8px" class="small">Слайдшоу картинок → слева</div>
-</div><!-- modal confirm for prank -->
+<!-- modal confirm for prank -->
 <div class="modal" id="confirmModal">
   <div class="card">
     <h3 class="danger">Внимание!</h3>
@@ -276,3 +198,58 @@ muteBtn.addEventListener('click', () => {
   scream.muted = bg.muted;
   muteBtn.textContent = bg.muted ? '🔈 Включить звук' : '🔇 Мьют';
 });
+
+/* ========== PRANK (с подтверждением) ========== */
+const prankBtn = document.getElementById('prankBtn');
+const modal = document.getElementById('confirmModal');
+const confirmPrank = document.getElementById('confirmPrank');
+const cancelPrank = document.getElementById('cancelPrank');
+
+prankBtn.addEventListener('click', ()=> {
+  // показываем модалку с предупреждением
+  modal.classList.add('show');
+});
+
+cancelPrank.addEventListener('click', ()=> modal.classList.remove('show'));
+
+confirmPrank.addEventListener('click', ()=> {
+  modal.classList.remove('show');
+  // резкое визуальное наложение + звук
+  // создаём fullscreen элемент
+  const overlay = document.createElement('div');
+  overlay.style.position='fixed';
+  overlay.style.inset='0';
+  overlay.style.zIndex='9999';
+  overlay.style.background='#000';
+  overlay.style.display='flex';
+  overlay.style.alignItems='center';
+  overlay.style.justifyContent='center';
+  overlay.style.flexDirection='column';
+  overlay.style.transition='opacity 0.3s';
+  overlay.innerHTML = '<img src="images/3.jpg" style="max-width:90%;max-height:90%;border-radius:6px;box-shadow:0 0 40px rgba(255,0,0,0.12)"><div style="color:var(--neon);margin-top:18px;font-size:1.6rem">Пранк активирован</div>';
+  document.body.appendChild(overlay);
+
+  // play scream
+  scream.currentTime = 0;
+  scream.play().catch(()=>{ alert('Браузер заблокировал воспроизведение звука — нажми "Включить фон" сначала.'); });
+
+  // эффект вспышки + камера shake (css)
+  overlay.animate([{filter:'brightness(0.2)'},{filter:'brightness(2)'}],{duration:180,iterations:2});
+  document.body.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(6px)'},{transform:'translateY(0)'}],{duration:300,iterations:4});
+
+  // удаляем overlay через 3.5s
+  setTimeout(()=>{ overlay.style.opacity='0'; setTimeout(()=>overlay.remove(),400); }, 3500);
+});
+
+/* ========== DOWNLOAD BUTTON placeholder ========= */
+document.getElementById('dlBtn').addEventListener('click', function(e){
+  // если у тебя есть файл tohir_config.zip в репозитории — он скачивается.
+  // иначе показываем подсказку.
+  // (при деплое на GitHub: помести zip в root или укажи правильный путь)
+  const fakePath = 'tohir_config.zip';
+  // проверка — делаем попытку загрузить (большинство браузеров покажут 404)
+  // оставляем действие по умолчанию
+});
+</script>
+</body>
+</html>
