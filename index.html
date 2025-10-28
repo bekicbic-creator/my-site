@@ -3,64 +3,79 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Хакерская зона — Demo</title>
+<title>Хакерский интерфейс — Demo</title>
 <style>
   :root{
-    --bg:#000;
-    --accent:#00ff66;
+    --bg-dark: #000;
+    --panel: rgba(2,6,2,0.6);
+    --accent: #00ff66;
     --muted: #9fffa0a6;
-    --card: rgba(255,255,255,0.03);
+    --card: rgba(255,255,255,0.02);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
-    background:linear-gradient(180deg,#000000 0%, #020602 60%);
+    background:var(--bg-dark);
     color:var(--accent);
     font-family: "Courier New", monospace;
     -webkit-font-smoothing:antialiased;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
+    -moz-osx-font-smoothing:grayscale;
+    overflow:auto;
   }
 
-  .app {
+  /* MATRIX BACKGROUND - placed behind content */
+  canvas#bgMatrix {
+    position:fixed;
+    left:0;
+    top:0;
     width:100%;
+    height:100%;
+    z-index:-2; /* behind everything */
+    pointer-events:none;
+    display:block;
+  }
+
+  /* dark overlay so content pops */
+  .bg-overlay {
+    position:fixed;
+    inset:0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.45));
+    z-index:-1;
+    pointer-events:none;
+  }
+
+  /* page container */
+  .container {
     max-width:1200px;
+    margin:28px auto;
+    padding:20px;
     display:grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr 360px;
     gap:18px;
     align-items:start;
   }
 
-  /* Left: main panel */
-  .panel {
+  /* main panel */
+  .main {
     background:var(--card);
-    border:1px solid rgba(0,255,102,0.06);
     border-radius:12px;
     padding:18px;
-    min-height:560px;
-    box-shadow:0 18px 60px rgba(0,0,0,0.6);
+    border:1px solid rgba(0,255,102,0.06);
+    box-shadow:0 14px 50px rgba(0,0,0,0.6);
     position:relative;
-    overflow:hidden;
+    z-index:1; /* above matrix */
   }
 
-  .header {
-    text-align:center;margin-bottom:14px;
-  }
   .title {
-    font-size:2rem;
-    letter-spacing:1px;
+    font-size:1.9rem;
     color:var(--accent);
-    text-shadow:0 0 14px rgba(0,255,102,0.08);
-    display:inline-block;
-    padding:6px 12px;
-    border-radius:8px;
-    cursor:pointer;
+    text-align:center;
+    text-shadow:0 0 12px rgba(0,255,102,0.08);
+    margin-bottom:6px;
   }
-  .subtitle { color:var(--muted); margin-top:6px; font-size:0.95rem }
+  .subtitle { text-align:center; color:var(--muted); margin-bottom:14px }
 
-  .controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:12px 0 8px 0; }
+  .controls { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px }
   .btn {
     background:transparent;
     border:1px solid rgba(255,255,255,0.04);
@@ -71,36 +86,32 @@
     font-weight:700;
   }
   .btn.primary { background:linear-gradient(90deg, rgba(0,255,102,0.08), rgba(0,170,255,0.06)); color:#001; border-color: rgba(0,255,102,0.18); }
-  .btn.ghost { background:transparent; border-style:dashed; }
+  .btn.warn { background:linear-gradient(90deg, rgba(255,110,110,0.06), rgba(255,150,80,0.04)); color:#111; }
 
-  .grid {
+  .layout {
     display:grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 380px;
     gap:12px;
-    margin-top:12px;
   }
 
   /* simulated camera box */
-  .cam-box {
-    background:#040504;
+  .cam {
+    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));
     border-radius:10px;
+    padding:10px;
     border:1px solid rgba(0,255,102,0.06);
-    padding:8px;
-    position:relative;
-    overflow:hidden;
   }
-  .cam-canvas {
+  canvas#camCanvas {
     width:100%;
     height:320px;
-    display:block;
     border-radius:8px;
-    background:#0a0a0a;
+    display:block;
+    background:#070707;
   }
-  .cam-overlay {
-    position:absolute; left:12px; top:12px; color:var(--accent); font-size:0.88rem; text-shadow:0 0 8px rgba(0,0,0,0.55);
-    background:linear-gradient(90deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15)); padding:6px 8px; border-radius:6px;
+  .cam-bar {
+    display:flex; justify-content:space-between; align-items:center; margin-top:8px;
   }
-  .cam-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
+  .cam-label { color:var(--muted); font-size:0.9rem }
 
   /* terminal */
   .terminal {
@@ -114,432 +125,370 @@
     min-height:120px;
     white-space:pre-wrap;
     line-height:1.25;
-    font-size:0.95rem;
+    font-size:0.94rem;
   }
-  .caret { display:inline-block; width:10px; height:18px; background:var(--accent); margin-left:6px; animation:blink 1s steps(1) infinite; vertical-align:middle }
-  @keyframes blink { 50%{opacity:0} }
 
-  /* right column */
-  .sidebar {
-    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+  /* sidebar */
+  .side {
+    background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));
     border-radius:12px;
-    padding:12px;
+    padding:14px;
     border:1px solid rgba(255,255,255,0.03);
-    min-height:560px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    z-index:1;
   }
+  .side h4 { color:var(--muted); font-size:0.95rem; margin-bottom:8px }
+  .swatches { display:flex; gap:8px; margin-bottom:12px }
+  .swatch { width:32px; height:32px; border-radius:6px; cursor:pointer; border:2px solid rgba(255,255,255,0.03) }
 
-  .swatches { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:12px; }
-  .swatch { width:34px; height:34px; border-radius:8px; cursor:pointer; border:2px solid rgba(255,255,255,0.04) }
+  .controls-col { display:flex; flex-direction:column; gap:8px }
 
-  .gallery { display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:8px; }
-  .gallery .cell { width:100%; height:82px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.02); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:0.9rem }
+  footer { text-align:center; color:var(--muted); margin-top:12px; font-size:0.85rem }
 
-  .footer { margin-top:12px; font-size:0.9rem; text-align:center; color:var(--muted) }
-
-  /* small screen */
   @media(max-width:980px){
-    .app { grid-template-columns: 1fr; }
-    .grid { grid-template-columns: 1fr; }
-    .cam-canvas { height:220px; }
+    .container { padding:12px }
+    .container { grid-template-columns: 1fr; }
+    canvas#camCanvas { height:220px }
   }
 </style>
 </head>
 <body>
 
-<div class="app">
-  <div class="panel">
-    <div class="header">
-      <div class="title" id="title">Система: ДОСТУП ОГРАНИЧЕН</div>
-      <div class="subtitle">Демонстрация. Всё симулировано — НЕТ реального доступа.</div>
-    </div>
+<!-- matrix canvas behind everything -->
+<canvas id="bgMatrix" aria-hidden="true"></canvas>
+<div class="bg-overlay" aria-hidden="true"></div>
+
+<div class="container">
+  <main class="main" role="main">
+    <div class="title">Доступ: СИМУЛЯЦИЯ • Демонстрация</div>
+    <div class="subtitle">Хакерский интерфейс — визуал, эффекты, без реального взлома</div>
 
     <div class="controls">
-      <button class="btn primary" id="themeBtn">Сменить тему</button>
-      <button class="btn" id="toggleMatrix">Вкл/Выкл матрицу</button>
-      <button class="btn ghost" id="copyLink">Копировать ссылку</button>
-      <button class="btn" id="fullscreenCam">Камера — на весь экран</button>
+      <button class="btn primary" id="toggleMatrixBtn">Откл/Вкл матрицу</button>
+      <button class="btn" id="glitchBtn">Глитч заголовка</button>
+      <button class="btn" id="typingBtn">Показать логи</button>
+      <button class="btn warn" id="snapshotBtn">Сделать снимок</button>
     </div>
 
-    <div class="grid">
-      <div>
-        <div class="cam-box" role="region" aria-label="Симулированная камера">
-          <canvas id="camCanvas" class="cam-canvas"></canvas>
-          <div class="cam-overlay" id="camOverlay">SIMULATED FEED • Paris (demo)</div>
-          <div class="cam-footer">
-            <button class="btn" id="freeze">Freeze</button>
-            <button class="btn" id="snapshot">Сделать снимок</button>
-          </div>
-        </div>
-
-        <div class="terminal" id="terminal">
-loading system...
-<span class="caret" id="termCaret"></span>
-        </div>
-      </div>
-
-      <div>
-        <div style="padding:6px">
-          <div style="text-align:center;font-weight:700;color:var(--muted);margin-bottom:8px">Панель управления</div>
-
-          <div style="display:flex;gap:8px;flex-direction:column;">
-            <label style="font-size:0.9rem;color:var(--muted)">Скорость симуляции</label>
-            <input id="speedRange" type="range" min="10" max="200" value="60">
-            <label style="font-size:0.9rem;color:var(--muted);margin-top:8px">Яркость помех</label>
-            <input id="noiseRange" type="range" min="0" max="100" value="25">
-          </div>
-
-          <div style="margin-top:12px">
-            <div style="font-size:0.95rem;color:var(--muted);text-align:center">Темы</div>
-            <div class="swatches" id="swatches">
-              <div class="swatch" data-color="#00ff66" style="background:#00ff66"></div>
-              <div class="swatch" data-color="#ad5cff" style="background:#ad5cff"></div>
-              <div class="swatch" data-color="#66b3ff" style="background:#66b3ff"></div>
-              <div class="swatch" data-color="#ff6b6b" style="background:#ff6b6b"></div>
+    <div class="layout">
+      <section>
+        <div class="cam" aria-label="Симулированная камера">
+          <canvas id="camCanvas" aria-label="Simulated camera output"></canvas>
+          <div class="cam-bar">
+            <div class="cam-label" id="camLabel">SIMULATED FEED • Paris (demo)</div>
+            <div>
+              <button class="btn" id="freezeBtn">Freeze</button>
+              <button class="btn" id="fsBtn">Весь экран</button>
             </div>
           </div>
-
-          <div style="margin-top:12px">
-            <div style="font-size:0.95rem;color:var(--muted);text-align:center">Галерея (демо)</div>
-            <div class="gallery" id="gallery">
-              <div class="cell">Image 1</div>
-              <div class="cell">Image 2</div>
-              <div class="cell">Image 3</div>
-              <div class="cell">Image 4</div>
-            </div>
-          </div>
-
         </div>
-      </div>
+
+        <div class="terminal" id="terminal" aria-live="polite">
+loading...
+        </div>
+      </section>
+
+      <aside class="side" aria-label="Панель">
+        <h4>Темы и настройки</h4>
+        <div class="swatches" id="swatchRow">
+          <div class="swatch" data-color="#00ff66" style="background:#00ff66"></div>
+          <div class="swatch" data-color="#ad5cff" style="background:#ad5cff"></div>
+          <div class="swatch" data-color="#66b3ff" style="background:#66b3ff"></div>
+          <div class="swatch" data-color="#ff6b6b" style="background:#ff6b6b"></div>
+        </div>
+
+        <div class="controls-col">
+          <label style="color:var(--muted);font-size:0.9rem">Скорость симуляции</label>
+          <input id="speed" type="range" min="10" max="200" value="60">
+
+          <label style="color:var(--muted);font-size:0.9rem">Интенсивность шума</label>
+          <input id="noise" type="range" min="0" max="100" value="28">
+
+          <label style="color:var(--muted);font-size:0.9rem">Яркость заголовка</label>
+          <input id="glow" type="range" min="0" max="40" value="12">
+        </div>
+
+        <div style="margin-top:12px">
+          <h4>Галерея</h4>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px">
+            <div style="background:linear-gradient(180deg,#0b0b0b,#020202);border-radius:8px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Image 1</div>
+            <div style="background:linear-gradient(180deg,#0b0b0b,#020202);border-radius:8px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Image 2</div>
+            <div style="background:linear-gradient(180deg,#0b0b0b,#020202);border-radius:8px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Image 3</div>
+            <div style="background:linear-gradient(180deg,#0b0b0b,#020202);border-radius:8px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Image 4</div>
+          </div>
+        </div>
+      </aside>
     </div>
 
-    <div class="footer">Чтобы сделать настоящий embed — получи разрешение владельца камеры. Здесь всё безопасно и имитируется.</div>
-  </div>
-
-  <div class="sidebar">
-    <div style="text-align:center;margin-bottom:8px;font-weight:700;color:var(--muted)">Быстрые действия</div>
-    <div style="display:flex;gap:8px;flex-direction:column">
-      <button class="btn" id="glitchTitle">Глитч-заголовок</button>
-      <button class="btn" id="startTyping">Покажи логи</button>
-      <button class="btn" id="flashScreen">Короткая вспышка</button>
-      <button class="btn" id="toggleContrast">Контрастный режим</button>
-    </div>
-
-    <div style="margin-top:18px">
-      <div style="font-weight:700;color:var(--muted);margin-bottom:8px">Инфо</div>
-      <div style="font-size:0.9rem;color:var(--muted)">Симуляция камеры работает внутри canvas. Можно делать снимки и менять скорость/шум.</div>
-    </div>
-  </div>
+    <footer>Демо • Всё симулировано — никаких реальных подключений</footer>
+  </main>
 </div>
 
 <script>
-/* ---------- THEME / UI ---------- */
-let accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66';
-const swatches = document.getElementById('swatches');
-swatches.addEventListener('click', (e)=> {
-  const s = e.target.closest('.swatch');
-  if(!s) return;
-  accent = s.dataset.color;
-  document.documentElement.style.setProperty('--accent', accent);
-  // subtle card border update
-  document.querySelectorAll('.panel, .panel *').forEach(()=>{});
-});
-
-document.getElementById('themeBtn').addEventListener('click', ()=> {
-  // cycle palettes
-  const themes = [
-    {bg:'#000', accent:'#00ff66'},
-    {bg:'#060008', accent:'#ad5cff'},
-    {bg:'#001020', accent:'#66b3ff'},
-    {bg:'#120000', accent:'#ff6b6b'}
-  ];
-  const cur = themes.findIndex(t => t.accent === accent);
-  const next = themes[(cur+1) % themes.length];
-  accent = next.accent;
-  document.documentElement.style.setProperty('--accent', next.accent);
-  document.body.style.background = `linear-gradient(180deg, ${next.bg}, #020602)`;
-});
-
-/* ---------- COPY LINK ---------- */
-document.getElementById('copyLink').addEventListener('click', async ()=> {
-  try {
-    await navigator.clipboard.writeText(location.href);
-    alert('Ссылка скопирована в буфер обмена');
-  } catch(e){
-    prompt('Скопируй ссылку вручную:', location.href);
+/* ---------------- MATRIX BACKGROUND (behind content) ---------------- */
+const bgCanvas = document.getElementById('bgMatrix');
+const bgCtx = bgCanvas.getContext('2d');
+let dpi = window.devicePixelRatio || 1;
+function resizeBg(){
+  dpi = window.devicePixelRatio || 1;
+  bgCanvas.width = innerWidth * dpi;
+  bgCanvas.height = innerHeight * dpi;
+  bgCanvas.style.width = innerWidth + 'px';
+  bgCanvas.style.height = innerHeight + 'px';
+  bgCtx.setTransform(dpi,0,0,dpi,0,0);
+  cols = Math.floor(innerWidth / fontSize);
+  drops.length = cols;
+  for(let i=0;i<cols;i++) if(!drops[i]) drops[i] = Math.random()*-100;
+}
+const fontSize = 14;
+let cols = Math.floor(window.innerWidth / fontSize);
+let drops = Array(cols).fill(0);
+const letters = '01АBCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$%&*()';
+function drawBg(){
+  bgCtx.fillStyle = 'rgba(0,0,0,0.06)';
+  bgCtx.fillRect(0,0, bgCanvas.width/dpi, bgCanvas.height/dpi);
+  bgCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#00ff66';
+  bgCtx.font = fontSize + 'px monospace';
+  for(let i=0;i<drops.length;i++){
+    const text = letters.charAt(Math.floor(Math.random()*letters.length));
+    bgCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if(drops[i] * fontSize > bgCanvas.height/dpi && Math.random() > 0.975) drops[i] = 0;
+    drops[i] += 1;
   }
-});
-
-/* ---------- FLASH SCREEN ---------- */
-document.getElementById('flashScreen').addEventListener('click', ()=> {
-  const f = document.createElement('div');
-  f.style.position = 'fixed';
-  f.style.inset = '0';
-  f.style.background = '#ffffff';
-  f.style.opacity = '0.06';
-  f.style.zIndex = 9999;
-  document.body.appendChild(f);
-  setTimeout(()=>{ f.style.opacity = '0'; setTimeout(()=>f.remove(), 250); }, 150);
-});
-
-/* ---------- TITLE GLITCH ---------- */
-const title = document.getElementById('title');
-document.getElementById('glitchTitle').addEventListener('click', ()=> {
-  title.style.transform = 'skewX(-8deg) scale(1.02)';
-  title.style.filter = 'brightness(1.4) drop-shadow(0 0 18px rgba(255,255,255,0.04))';
-  setTimeout(()=>{ title.style.transform=''; title.style.filter=''; }, 380);
-});
-
-/* ---------- MATRIX TOGGLE (light) ---------- */
-let matrixOn = true;
-let matrixInterval = null;
-function startMatrix(){
-  if(matrixInterval) return;
-  const c = document.createElement('canvas');
-  c.id = 'matrixBg';
-  c.style.position='fixed';
-  c.style.inset='0';
-  c.style.zIndex=0;
-  c.style.pointerEvents='none';
-  document.body.appendChild(c);
-  const ctx = c.getContext('2d');
-  function resize(){ c.width = innerWidth; c.height = innerHeight; }
-  resize();
-  window.addEventListener('resize', resize);
-  const fontSize = 14;
-  const cols = Math.floor(innerWidth / fontSize);
-  const drops = new Array(cols).fill(0);
-  const letters = '01АBCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$%&*()';
-  matrixInterval = setInterval(()=> {
-    ctx.fillStyle = 'rgba(0,0,0,0.06)';
-    ctx.fillRect(0,0,c.width,c.height);
-    ctx.fillStyle = accent;
-    ctx.font = fontSize + 'px monospace';
-    for(let i=0;i<cols;i++){
-      const text = letters.charAt(Math.floor(Math.random()*letters.length));
-      ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-      if(drops[i]*fontSize > c.height && Math.random() > 0.975) drops[i]=0;
-      drops[i]++;
-    }
-  }, 45);
 }
-function stopMatrix(){
-  clearInterval(matrixInterval);
-  matrixInterval = null;
-  const mb = document.getElementById('matrixBg');
-  if(mb) mb.remove();
-}
-startMatrix();
-document.getElementById('toggleMatrix').addEventListener('click', ()=> {
-  matrixOn = !matrixOn;
-  if(matrixOn) startMatrix(); else stopMatrix();
-});
+let bgInterval = setInterval(drawBg, 60);
+window.addEventListener('resize', resizeBg);
+resizeBg();
 
-/* ---------- TERMINAL TYPING ---------- */
-const term = document.getElementById('terminal');
-const caret = document.getElementById('termCaret');
-const logs = [
-  "Инициализация ...",
-  "Загрузка модулей: ████████▒ 82%",
-  "Сканирование интерфейсов... OK",
-  "Синхронизация времени: " + new Date().toLocaleString(),
-  "Мониторинг: активен",
-  "Готово. Демонстрация симулированного потока."
-];
-let lindex=0, cindex=0;
-let termBuffer = '';
-
-function startTyping(){
-  termBuffer = '';
-  lindex = 0; cindex = 0;
-  term.textContent = '';
-  typeNext();
-}
-function typeNext(){
-  if(lindex >= logs.length){ setTimeout(()=> { term.textContent = logs.join('\n'); }, 1000); return; }
-  const line = logs[lindex];
-  if(cindex <= line.length){
-    term.textContent = logs.slice(0,lindex).join('\n') + (lindex?'\n':'') + line.slice(0,cindex);
-    cindex++;
-    setTimeout(typeNext, 36 + Math.random()*40);
+/* toggle */
+document.getElementById('toggleMatrixBtn').addEventListener('click', ()=> {
+  if(bgInterval){
+    clearInterval(bgInterval);
+    bgInterval = null;
+    bgCanvas.style.display = 'none';
   } else {
-    lindex++; cindex = 0; setTimeout(typeNext, 600);
+    bgCanvas.style.display = 'block';
+    bgInterval = setInterval(drawBg, 60);
   }
-}
-document.getElementById('startTyping').addEventListener('click', ()=> startTyping());
+});
 
-/* auto-start a little */
-setTimeout(()=> startTyping(), 800);
-
-/* ---------- SIMULATED CAMERA (canvas) ---------- */
+/* ---------------- SIMULATED CAMERA (canvas) ---------------- */
 const camCanvas = document.getElementById('camCanvas');
 const camCtx = camCanvas.getContext('2d');
 let camW=0, camH=0;
-let simSpeed = 60; // default frames per sec-ish
-let noiseLevel = 25;
-let freeze = false;
-let particles = [];
 function resizeCam(){
-  camW = camCanvas.width = camCanvas.clientWidth * devicePixelRatio;
-  camH = camCanvas.height = camCanvas.clientHeight * devicePixelRatio;
+  camW = camCanvas.width = camCanvas.clientWidth * (window.devicePixelRatio || 1);
+  camH = camCanvas.height = camCanvas.clientHeight * (window.devicePixelRatio || 1);
   camCanvas.style.width = camCanvas.clientWidth + 'px';
   camCanvas.style.height = camCanvas.clientHeight + 'px';
-  camCtx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  camCtx.setTransform(window.devicePixelRatio || 1,0,0,window.devicePixelRatio || 1,0,0);
 }
+let particles = [];
 function initParticles(){
   particles = [];
-  for(let i=0;i<80;i++){
+  const count = Math.max(40, Math.floor(camCanvas.clientWidth / 10));
+  for(let i=0;i<count;i++){
     particles.push({
       x: Math.random()*camCanvas.clientWidth,
       y: Math.random()*camCanvas.clientHeight,
-      vx: (Math.random()-0.5)*0.6,
+      vx: (Math.random()-0.5)*0.8,
       vy: (Math.random()-0.3)*0.6,
-      size: 1 + Math.random()*3,
-      hue: 120 + (Math.random()*60 - 30)
+      sx: 6 + Math.random()*20,
+      sy: 2 + Math.random()*6
     });
   }
 }
-function drawSim(){
+let simSpeed = 60;
+let noise = 28;
+let freeze = false;
+
+function drawCam(){
   if(freeze) return;
-  // background gradient
   const w = camCanvas.clientWidth, h = camCanvas.clientHeight;
-  camCtx.clearRect(0,0,w,h);
-  const grad = camCtx.createLinearGradient(0,0,w,h);
-  grad.addColorStop(0, '#071017');
-  grad.addColorStop(1, '#00120a');
-  camCtx.fillStyle = grad;
+  // background
+  const g = camCtx.createLinearGradient(0,0,w,h);
+  g.addColorStop(0, '#071017');
+  g.addColorStop(1, '#00120a');
+  camCtx.fillStyle = g;
   camCtx.fillRect(0,0,w,h);
 
-  // moving shapes (simulate cars/people)
+  // moving blobs (people/cars sim)
+  camCtx.globalAlpha = 0.06;
+  camCtx.fillStyle = '#00ff66';
   for(let i=0;i<particles.length;i++){
     const p = particles[i];
-    p.x += p.vx * (noiseLevel/30);
-    p.y += p.vy * (noiseLevel/30);
-    if(p.x < -10) p.x = w + 10;
-    if(p.x > w + 10) p.x = -10;
-    if(p.y < -10) p.y = h + 10;
-    if(p.y > h + 10) p.y = -10;
+    p.x += p.vx * (noise/30);
+    p.y += p.vy * (noise/30);
+    if(p.x < -30) p.x = w + 30;
+    if(p.x > w + 30) p.x = -30;
+    if(p.y < -30) p.y = h + 30;
+    if(p.y > h + 30) p.y = -30;
     camCtx.beginPath();
-    camCtx.fillStyle = `rgba(0,255,120,0.06)`;
-    camCtx.ellipse(p.x, p.y, p.size*6, p.size*2, 0, 0, Math.PI*2);
+    camCtx.ellipse(p.x, p.y, p.sx, p.sy, 0, 0, Math.PI*2);
     camCtx.fill();
     camCtx.closePath();
   }
+  camCtx.globalAlpha = 1;
 
-  // rectangular "street" strip
-  camCtx.fillStyle = 'rgba(0,0,0,0.18)';
-  camCtx.fillRect(0, h*0.6, w, h*0.4);
+  // fake highlighted boxes
+  camCtx.fillStyle = 'rgba(0,255,120,0.04)';
+  camCtx.fillRect(w*0.08, h*0.30, w*0.26, h*0.16);
+  camCtx.fillRect(w*0.6, h*0.28, w*0.28, h*0.18);
 
-  // fake "object" highlights
-  camCtx.fillStyle = 'rgba(0,255,150,0.06)';
-  camCtx.fillRect(w*0.12, h*0.35, w*0.25, h*0.18);
-  camCtx.fillRect(w*0.6, h*0.3, w*0.28, h*0.2);
-
-  // add noise
-  const noise = noiseLevel;
-  camCtx.fillStyle = `rgba(0,0,0,0)`;
-  const imageData = camCtx.getImageData(0,0,w,h);
+  // noise: draw few bright pixels
+  const id = camCtx.getImageData(0,0,w,h);
   for(let i=0;i<noise;i++){
     const nx = Math.floor(Math.random()*w);
     const ny = Math.floor(Math.random()*h);
     const idx = (ny * w + nx) * 4;
-    // tiny bright speck
-    imageData.data[idx] = imageData.data[idx] + Math.floor(Math.random()*60);
-    imageData.data[idx+1] = imageData.data[idx+1] + Math.floor(Math.random()*60);
-    imageData.data[idx+2] = imageData.data[idx+2] + Math.floor(Math.random()*60);
+    id.data[idx] = Math.min(255, id.data[idx] + Math.floor(Math.random()*40));
+    id.data[idx+1] = Math.min(255, id.data[idx+1] + Math.floor(Math.random()*40));
+    id.data[idx+2] = Math.min(255, id.data[idx+2] + Math.floor(Math.random()*40));
   }
-  camCtx.putImageData(imageData, 0, 0);
+  camCtx.putImageData(id, 0, 0);
 
-  // overlay timestamp and label
+  // timestamp & header
   camCtx.fillStyle = 'rgba(0,0,0,0.45)';
-  camCtx.fillRect(8,8,220,30);
-  camCtx.fillStyle = accent;
+  camCtx.fillRect(8,8,230,28);
+  camCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#00ff66';
   camCtx.font = '14px monospace';
-  const ts = new Date().toLocaleString();
-  camCtx.fillText('SIMULATED • Paris, demo', 14, 28);
+  camCtx.fillText('SIMULATED • Paris (demo)', 14, 26);
   camCtx.fillStyle = '#9fffa0a6';
   camCtx.font = '12px monospace';
-  camCtx.fillText(ts, 160, 28);
+  camCtx.fillText(new Date().toLocaleString(), 160, 26);
 }
 
-function loopCam(){
-  drawSim();
-  // frame control
-  setTimeout(()=>{ if(!freeze) requestAnimationFrame(loopCam); }, 1000 / Math.max(12, simSpeed));
+let camLoop = null;
+function startCamLoop(){
+  if(camLoop) return;
+  function loop(){
+    drawCam();
+    camLoop = setTimeout(()=> requestAnimationFrame(loop), 1000 / Math.max(12, simSpeed));
+  }
+  loop();
+}
+function stopCamLoop(){
+  clearTimeout(camLoop);
+  camLoop = null;
 }
 
-function startCam(){
+function restartCam(){
+  stopCamLoop();
   resizeCam();
   initParticles();
-  loopCam();
+  freeze = false;
+  startCamLoop();
 }
 window.addEventListener('resize', ()=> { resizeCam(); initParticles(); });
 
-startCam();
+resizeCam();
+initParticles();
+startCamLoop();
 
-/* UI controls for simulation */
-const speedRange = document.getElementById('speedRange');
-const noiseRange = document.getElementById('noiseRange');
-speedRange.addEventListener('input', ()=> { simSpeed = Number(speedRange.value); });
-noiseRange.addEventListener('input', ()=> { noiseLevel = Number(noiseRange.value); });
-
-document.getElementById('freeze').addEventListener('click', ()=> {
+/* controls */
+document.getElementById('speed').addEventListener('input', (e)=> { simSpeed = Number(e.target.value); });
+document.getElementById('noise').addEventListener('input', (e)=> { noise = Number(e.target.value); });
+document.getElementById('freezeBtn').addEventListener('click', ()=> {
   freeze = !freeze;
-  document.getElementById('freeze').textContent = freeze ? 'Разморозить' : 'Freeze';
-  if(!freeze) loopCam();
+  document.getElementById('freezeBtn').textContent = freeze ? 'Разморозить' : 'Freeze';
+  if(!freeze) startCamLoop();
 });
-
-document.getElementById('snapshot').addEventListener('click', ()=> {
-  const data = camCanvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = data;
-  a.download = 'snapshot.png';
-  a.click();
-});
-
-/* ---------- FULLSCREEN CAMERA ---------- */
-document.getElementById('fullscreenCam').addEventListener('click', ()=> {
+document.getElementById('fsBtn').addEventListener('click', ()=> {
   const el = camCanvas;
   if(el.requestFullscreen) el.requestFullscreen();
   else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 });
 
-/* ---------- TOGGLE CONTRAST (visual) ---------- */
-let contrastOn = false;
-document.getElementById('toggleContrast').addEventListener('click', ()=> {
-  contrastOn = !contrastOn;
-  document.body.style.filter = contrastOn ? 'contrast(1.2) saturate(1.1)' : 'none';
+/* snapshot button */
+document.getElementById('snapshotBtn').addEventListener('click', ()=> {
+  const url = camCanvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'snapshot.png';
+  a.click();
 });
 
-/* ---------- SNAPSHOT PREVIEW / GALLERY FILL (demo) ---------- */
-document.querySelectorAll('.gallery .cell').forEach((c,i)=> {
-  c.addEventListener('click', ()=> {
-    // when clicked, set cam overlay label and flash
-    const label = ['Square','Street','Square 2','Plaza'][i] || 'Image';
-    document.getElementById('camOverlay').textContent = 'SIMULATED FEED • ' + label;
-    const flash = document.createElement('div');
-    flash.style.position='fixed'; flash.style.inset='0'; flash.style.background = '#fff'; flash.style.opacity='0.04'; flash.style.zIndex=9999;
-    document.body.appendChild(flash);
-    setTimeout(()=>{ flash.style.opacity='0'; setTimeout(()=>flash.remove(),200); }, 180);
-  });
+/* glitch title */
+document.getElementById('glitchBtn').addEventListener('click', ()=> {
+  const t = document.querySelector('.title');
+  t.style.transform = 'skewX(-6deg) scale(1.02)';
+  t.style.textShadow = '0 0 30px rgba(0,255,102,0.35)';
+  setTimeout(()=>{ t.style.transform=''; t.style.textShadow='0 0 12px rgba(0,255,102,0.08)'; }, 360);
 });
 
-/* ---------- accessibility: space toggles matrix ---------- */
-document.addEventListener('keydown', (e)=> {
-  if(e.code === 'Space') {
-    matrixOn = !matrixOn;
-    if(matrixOn) startMatrix(); else stopMatrix();
+/* typing logs */
+const term = document.getElementById('terminal');
+const logs = [
+  "Инициализация системы...",
+  "Загрузка модулей: ████████▒ 82%",
+  "Сканирование портов: 22, 80, 443 ...",
+  "Синхронизация времени: " + new Date().toLocaleString(),
+  "Мониторинг: активен",
+  "Демо: поток симулирован"
+];
+function typeLogs(){
+  term.textContent = '';
+  let li = 0, ci = 0;
+  function step(){
+    if(li >= logs.length) { return; }
+    const line = logs[li];
+    if(ci <= line.length){
+      term.textContent = logs.slice(0,li).join('\n') + (li ? '\n' : '') + line.slice(0,ci);
+      ci++;
+      setTimeout(step, 30 + Math.random()*40);
+    } else {
+      li++; ci=0;
+      setTimeout(step, 600);
+    }
+  }
+  step();
+}
+document.getElementById('typingBtn').addEventListener('click', ()=> typeLogs());
+setTimeout(()=> typeLogs(), 600);
+
+/* copy link */
+document.querySelectorAll('.btn').forEach(b => {
+  if(b.id === 'copyLink') return;
+});
+/* quick copy: attach to ctrl+c like behavior on click of title */
+document.querySelector('.title').addEventListener('click', ()=> {
+  try { navigator.clipboard.writeText(location.href); alert('Ссылка скопирована'); }
+  catch(e){ /* ignore */ }
+});
+
+/* swatches change accent */
+document.getElementById('swatchRow').addEventListener('click', (e)=> {
+  const s = e.target.closest('.swatch');
+  if(!s) return;
+  const c = s.dataset.color;
+  document.documentElement.style.setProperty('--accent', c);
+});
+
+/* toggle matrix via hiding canvas or starting interval */
+document.getElementById('toggleMatrixBtn').addEventListener('click', ()=> {
+  if(bgInterval){
+    clearInterval(bgInterval);
+    bgInterval = null;
+    bgCanvas.style.opacity = '0';
+  } else {
+    bgCanvas.style.opacity = '1';
+    bgInterval = setInterval(drawBg, 60);
   }
 });
 
-/* ---------- small UI polish: clicking title animates ---------- */
-title.addEventListener('click', ()=> {
-  title.style.transform = 'translateY(-4px) rotate(-1deg)';
-  setTimeout(()=> title.style.transform = '', 220);
+/* adjust glow */
+document.getElementById('glow').addEventListener('input', (e)=> {
+  const val = e.target.value;
+  document.querySelector('.title').style.textShadow = `0 0 ${val}px ${getComputedStyle(document.documentElement).getPropertyValue('--accent')}`;
 });
 
-/* ensure canvas sizes correct on load */
-setTimeout(()=> { resizeCam(); initParticles(); }, 250);
+/* accessibility: space toggles freeze */
+document.addEventListener('keydown', (e)=> {
+  if(e.code === 'Space') {
+    freeze = !freeze;
+    document.getElementById('freezeBtn').textContent = freeze ? 'Разморозить' : 'Freeze';
+  }
+});
 </script>
-
 </body>
 </html>
