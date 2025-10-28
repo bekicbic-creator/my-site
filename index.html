@@ -1,494 +1,217 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Хакерский интерфейс — Demo</title>
-<style>
-  :root{
-    --bg-dark: #000;
-    --panel: rgba(2,6,2,0.6);
-    --accent: #00ff66;
-    --muted: #9fffa0a6;
-    --card: rgba(255,255,255,0.02);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-    background:var(--bg-dark);
-    color:var(--accent);
-    font-family: "Courier New", monospace;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    overflow:auto;
-  }
-
-  /* MATRIX BACKGROUND - placed behind content */
-  canvas#bgMatrix {
-    position:fixed;
-    left:0;
-    top:0;
-    width:100%;
-    height:100%;
-    z-index:-2; /* behind everything */
-    pointer-events:none;
-    display:block;
-  }
-
-  /* dark overlay so content pops */
-  .bg-overlay {
-    position:fixed;
-    inset:0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.45));
-    z-index:-1;
-    pointer-events:none;
-  }
-
-  /* page container */
-  .container {
-    max-width:1200px;
-    margin:28px auto;
-    padding:20px;
-    display:grid;
-    grid-template-columns: 1fr 360px;
-    gap:18px;
-    align-items:start;
-  }
-
-  /* main panel */
-  .main {
-    background:var(--card);
-    border-radius:12px;
-    padding:18px;
-    border:1px solid rgba(0,255,102,0.06);
-    box-shadow:0 14px 50px rgba(0,0,0,0.6);
-    position:relative;
-    z-index:1; /* above matrix */
-  }
-
-  .title {
-    font-size:1.9rem;
-    color:var(--accent);
-    text-align:center;
-    text-shadow:0 0 12px rgba(0,255,102,0.08);
-    margin-bottom:6px;
-  }
-  .subtitle { text-align:center; color:var(--muted); margin-bottom:14px }
-
-  .controls { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px }
-  .btn {
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.04);
-    color:var(--accent);
-    padding:8px 12px;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:700;
-  }
-  .btn.primary { background:linear-gradient(90deg, rgba(0,255,102,0.08), rgba(0,170,255,0.06)); color:#001; border-color: rgba(0,255,102,0.18); }
-  .btn.warn { background:linear-gradient(90deg, rgba(255,110,110,0.06), rgba(255,150,80,0.04)); color:#111; }
-
-  .layout {
-    display:grid;
-    grid-template-columns: 1fr 380px;
-    gap:12px;
-  }
-
-  /* simulated camera box */
-  .cam {
-    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));
-    border-radius:10px;
-    padding:10px;
-    border:1px solid rgba(0,255,102,0.06);
-  }
-  canvas#camCanvas {
-    width:100%;
-    height:320px;
-    border-radius:8px;
-    display:block;
-    background:#070707;
-  }
-  .cam-bar {
-    display:flex; justify-content:space-between; align-items:center; margin-top:8px;
-  }
-  .cam-label { color:var(--muted); font-size:0.9rem }
-
-  /* terminal */
-  .terminal {
-    margin-top:12px;
-    background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));
-    border-radius:8px;
-    border:1px solid rgba(0,255,102,0.04);
-    padding:12px;
-    font-family:monospace;
-    color:var(--accent);
-    min-height:120px;
-    white-space:pre-wrap;
-    line-height:1.25;
-    font-size:0.94rem;
-  }
-
-  /* sidebar */
-  .side {
-    background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));
-    border-radius:12px;
-    padding:14px;
-    border:1px solid rgba(255,255,255,0.03);
-    box-shadow:0 10px 30px rgba(0,0,0,0.5);
-    z-index:1;
-  }
-  .side h4 { color:var(--muted); font-size:0.95rem; margin-bottom:8px }
-  .swatches { display:flex; gap:8px; margin-bottom:12px }
-  .swatch { width:32px; height:32px; border-radius:6px; cursor:pointer; border:2px solid rgba(255,255,255,0.03) }
-
-  .controls-col { display:flex; flex-direction:column; gap:8px }
-
-  footer { text-align:center; color:var(--muted); margin-top:12px; font-size:0.85rem }
-
-  @media(max-width:980px){
-    .container { padding:12px }
-    .container { grid-template-columns: 1fr; }
-    canvas#camCanvas { height:220px }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixel Run Love</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: #87CEEB;
+      font-family: monospace;
+    }
+    canvas {
+      display: block;
+      background: linear-gradient(#ff9966, #ff5e62);
+      width: 100vw;
+      height: 100vh;
+    }
+    #msg {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
+  <div id="msg">Нажми [Пробел] или [Тап], чтобы прыгнуть 🍔</div>
+  <canvas id="game"></canvas>
+  <audio id="music" loop>
+    <source src="https://cdn.pixabay.com/audio/2023/01/10/audio_97c5beea75.mp3" type="audio/mpeg">
+  </audio>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-<!-- matrix canvas behind everything -->
-<canvas id="bgMatrix" aria-hidden="true"></canvas>
-<div class="bg-overlay" aria-hidden="true"></div>
+    const music = document.getElementById("music");
+    music.volume = 0.3;
+    music.play().catch(()=>{});
 
-<div class="container">
-  <main class="main" role="main">
-    <div class="title">Доступ: СИМУЛЯЦИЯ • Демонстрация</div>
-    <div class="subtitle">Хакерский интерфейс — визуал, эффекты, без реального взлома</div>
+    // === Игровые ресурсы ===
+    const playerImg = new Image();
+    playerImg.src = "https://i.ibb.co/4mxR2wC/player.png"; // пиксельный парень
+    const girlImg = new Image();
+    girlImg.src = "https://i.ibb.co/ZTkgfXy/girl.png"; // пиксельная девушка
+    const cactusImg = new Image();
+    cactusImg.src = "https://i.ibb.co/YfF25QF/cactus.png";
+    const burgerImg = new Image();
+    burgerImg.src = "https://i.ibb.co/JvgbxwH/burger.png";
+    const heartImg = new Image();
+    heartImg.src = "https://i.ibb.co/3d5tmCX/heart.png";
+    const houseImg = new Image();
+    houseImg.src = "https://i.ibb.co/QYdKdZN/house.png";
 
-    <div class="controls">
-      <button class="btn primary" id="toggleMatrixBtn">Откл/Вкл матрицу</button>
-      <button class="btn" id="glitchBtn">Глитч заголовка</button>
-      <button class="btn" id="typingBtn">Показать логи</button>
-      <button class="btn warn" id="snapshotBtn">Сделать снимок</button>
-    </div>
+    let player = { x: 100, y: 0, w: 80, h: 80, vy: 0, jumping: false, invincible: false };
+    let ground = canvas.height - 150;
+    let obstacles = [];
+    let burgers = [];
+    let gameSpeed = 8;
+    let score = 0;
+    let level = 1;
+    let girlMet = false;
+    let invincibleTimer = 0;
 
-    <div class="layout">
-      <section>
-        <div class="cam" aria-label="Симулированная камера">
-          <canvas id="camCanvas" aria-label="Simulated camera output"></canvas>
-          <div class="cam-bar">
-            <div class="cam-label" id="camLabel">SIMULATED FEED • Paris (demo)</div>
-            <div>
-              <button class="btn" id="freezeBtn">Freeze</button>
-              <button class="btn" id="fsBtn">Весь экран</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="terminal" id="terminal" aria-live="polite">
-loading...
-        </div>
-      </section>
-
-      <aside class="side" aria-label="Панель">
-        <h4>Темы и настройки</h4>
-        <div class="swatches" id="swatchRow">
-          <div class="swatch" data-color="#00ff66" style="background:#00ff66"></div>
-          <div class="swatch" data-color="#ad5cff" style="background:#ad5cff"></div>
-          <div class="swatch" data-color="#66b3ff" style="background:#66b3ff"></div>
-          <div class="swatch" data-color="#ff6b6b" style="background:#ff6b6b"></div>
-        </div>
-
-        <div class="controls-col">
-          <label style="color:var(--muted);font-size:0.9rem">Скорость симуляции</label>
-          <input id="speed" type="range" min="10" max="200" value="60">
-
-          <label style="color:var(--muted);font-size:0.9rem">Интенсивность шума</label>
-          <input id="noise" type="range" min="0" max="100" value="28">
-
-          <label style="color:var(--muted);font-size:0.9rem">Яркость заголовка</label>
-          <input id="glow" type="range" min="0" max="40" value="12">
-        </div>
-
-        <div style="margin-top:12px">
-          <h4>Галерея</h4>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px">
-            <div style="background:linear-gradient(180deg,#0b0b0b,#020202);border-radius:8px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Image 1</div>
-            <div style="background:linear-gradient(180deg,#0b0b0b,#020202);border-radius:8px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Image 2</div>
-            <div style="background:linear-gradient(180deg,#0b0b0b,#020202);border-radius:8px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Image 3</div>
-            <div style="background:linear-gradient(180deg,#0b0b0b,#020202);border-radius:8px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Image 4</div>
-          </div>
-        </div>
-      </aside>
-    </div>
-
-    <footer>Демо • Всё симулировано — никаких реальных подключений</footer>
-  </main>
-</div>
-
-<script>
-/* ---------------- MATRIX BACKGROUND (behind content) ---------------- */
-const bgCanvas = document.getElementById('bgMatrix');
-const bgCtx = bgCanvas.getContext('2d');
-let dpi = window.devicePixelRatio || 1;
-function resizeBg(){
-  dpi = window.devicePixelRatio || 1;
-  bgCanvas.width = innerWidth * dpi;
-  bgCanvas.height = innerHeight * dpi;
-  bgCanvas.style.width = innerWidth + 'px';
-  bgCanvas.style.height = innerHeight + 'px';
-  bgCtx.setTransform(dpi,0,0,dpi,0,0);
-  cols = Math.floor(innerWidth / fontSize);
-  drops.length = cols;
-  for(let i=0;i<cols;i++) if(!drops[i]) drops[i] = Math.random()*-100;
-}
-const fontSize = 14;
-let cols = Math.floor(window.innerWidth / fontSize);
-let drops = Array(cols).fill(0);
-const letters = '01АBCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$%&*()';
-function drawBg(){
-  bgCtx.fillStyle = 'rgba(0,0,0,0.06)';
-  bgCtx.fillRect(0,0, bgCanvas.width/dpi, bgCanvas.height/dpi);
-  bgCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#00ff66';
-  bgCtx.font = fontSize + 'px monospace';
-  for(let i=0;i<drops.length;i++){
-    const text = letters.charAt(Math.floor(Math.random()*letters.length));
-    bgCtx.fillText(text, i * fontSize, drops[i] * fontSize);
-    if(drops[i] * fontSize > bgCanvas.height/dpi && Math.random() > 0.975) drops[i] = 0;
-    drops[i] += 1;
-  }
-}
-let bgInterval = setInterval(drawBg, 60);
-window.addEventListener('resize', resizeBg);
-resizeBg();
-
-/* toggle */
-document.getElementById('toggleMatrixBtn').addEventListener('click', ()=> {
-  if(bgInterval){
-    clearInterval(bgInterval);
-    bgInterval = null;
-    bgCanvas.style.display = 'none';
-  } else {
-    bgCanvas.style.display = 'block';
-    bgInterval = setInterval(drawBg, 60);
-  }
-});
-
-/* ---------------- SIMULATED CAMERA (canvas) ---------------- */
-const camCanvas = document.getElementById('camCanvas');
-const camCtx = camCanvas.getContext('2d');
-let camW=0, camH=0;
-function resizeCam(){
-  camW = camCanvas.width = camCanvas.clientWidth * (window.devicePixelRatio || 1);
-  camH = camCanvas.height = camCanvas.clientHeight * (window.devicePixelRatio || 1);
-  camCanvas.style.width = camCanvas.clientWidth + 'px';
-  camCanvas.style.height = camCanvas.clientHeight + 'px';
-  camCtx.setTransform(window.devicePixelRatio || 1,0,0,window.devicePixelRatio || 1,0,0);
-}
-let particles = [];
-function initParticles(){
-  particles = [];
-  const count = Math.max(40, Math.floor(camCanvas.clientWidth / 10));
-  for(let i=0;i<count;i++){
-    particles.push({
-      x: Math.random()*camCanvas.clientWidth,
-      y: Math.random()*camCanvas.clientHeight,
-      vx: (Math.random()-0.5)*0.8,
-      vy: (Math.random()-0.3)*0.6,
-      sx: 6 + Math.random()*20,
-      sy: 2 + Math.random()*6
-    });
-  }
-}
-let simSpeed = 60;
-let noise = 28;
-let freeze = false;
-
-function drawCam(){
-  if(freeze) return;
-  const w = camCanvas.clientWidth, h = camCanvas.clientHeight;
-  // background
-  const g = camCtx.createLinearGradient(0,0,w,h);
-  g.addColorStop(0, '#071017');
-  g.addColorStop(1, '#00120a');
-  camCtx.fillStyle = g;
-  camCtx.fillRect(0,0,w,h);
-
-  // moving blobs (people/cars sim)
-  camCtx.globalAlpha = 0.06;
-  camCtx.fillStyle = '#00ff66';
-  for(let i=0;i<particles.length;i++){
-    const p = particles[i];
-    p.x += p.vx * (noise/30);
-    p.y += p.vy * (noise/30);
-    if(p.x < -30) p.x = w + 30;
-    if(p.x > w + 30) p.x = -30;
-    if(p.y < -30) p.y = h + 30;
-    if(p.y > h + 30) p.y = -30;
-    camCtx.beginPath();
-    camCtx.ellipse(p.x, p.y, p.sx, p.sy, 0, 0, Math.PI*2);
-    camCtx.fill();
-    camCtx.closePath();
-  }
-  camCtx.globalAlpha = 1;
-
-  // fake highlighted boxes
-  camCtx.fillStyle = 'rgba(0,255,120,0.04)';
-  camCtx.fillRect(w*0.08, h*0.30, w*0.26, h*0.16);
-  camCtx.fillRect(w*0.6, h*0.28, w*0.28, h*0.18);
-
-  // noise: draw few bright pixels
-  const id = camCtx.getImageData(0,0,w,h);
-  for(let i=0;i<noise;i++){
-    const nx = Math.floor(Math.random()*w);
-    const ny = Math.floor(Math.random()*h);
-    const idx = (ny * w + nx) * 4;
-    id.data[idx] = Math.min(255, id.data[idx] + Math.floor(Math.random()*40));
-    id.data[idx+1] = Math.min(255, id.data[idx+1] + Math.floor(Math.random()*40));
-    id.data[idx+2] = Math.min(255, id.data[idx+2] + Math.floor(Math.random()*40));
-  }
-  camCtx.putImageData(id, 0, 0);
-
-  // timestamp & header
-  camCtx.fillStyle = 'rgba(0,0,0,0.45)';
-  camCtx.fillRect(8,8,230,28);
-  camCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#00ff66';
-  camCtx.font = '14px monospace';
-  camCtx.fillText('SIMULATED • Paris (demo)', 14, 26);
-  camCtx.fillStyle = '#9fffa0a6';
-  camCtx.font = '12px monospace';
-  camCtx.fillText(new Date().toLocaleString(), 160, 26);
-}
-
-let camLoop = null;
-function startCamLoop(){
-  if(camLoop) return;
-  function loop(){
-    drawCam();
-    camLoop = setTimeout(()=> requestAnimationFrame(loop), 1000 / Math.max(12, simSpeed));
-  }
-  loop();
-}
-function stopCamLoop(){
-  clearTimeout(camLoop);
-  camLoop = null;
-}
-
-function restartCam(){
-  stopCamLoop();
-  resizeCam();
-  initParticles();
-  freeze = false;
-  startCamLoop();
-}
-window.addEventListener('resize', ()=> { resizeCam(); initParticles(); });
-
-resizeCam();
-initParticles();
-startCamLoop();
-
-/* controls */
-document.getElementById('speed').addEventListener('input', (e)=> { simSpeed = Number(e.target.value); });
-document.getElementById('noise').addEventListener('input', (e)=> { noise = Number(e.target.value); });
-document.getElementById('freezeBtn').addEventListener('click', ()=> {
-  freeze = !freeze;
-  document.getElementById('freezeBtn').textContent = freeze ? 'Разморозить' : 'Freeze';
-  if(!freeze) startCamLoop();
-});
-document.getElementById('fsBtn').addEventListener('click', ()=> {
-  const el = camCanvas;
-  if(el.requestFullscreen) el.requestFullscreen();
-  else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-});
-
-/* snapshot button */
-document.getElementById('snapshotBtn').addEventListener('click', ()=> {
-  const url = camCanvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'snapshot.png';
-  a.click();
-});
-
-/* glitch title */
-document.getElementById('glitchBtn').addEventListener('click', ()=> {
-  const t = document.querySelector('.title');
-  t.style.transform = 'skewX(-6deg) scale(1.02)';
-  t.style.textShadow = '0 0 30px rgba(0,255,102,0.35)';
-  setTimeout(()=>{ t.style.transform=''; t.style.textShadow='0 0 12px rgba(0,255,102,0.08)'; }, 360);
-});
-
-/* typing logs */
-const term = document.getElementById('terminal');
-const logs = [
-  "Инициализация системы...",
-  "Загрузка модулей: ████████▒ 82%",
-  "Сканирование портов: 22, 80, 443 ...",
-  "Синхронизация времени: " + new Date().toLocaleString(),
-  "Мониторинг: активен",
-  "Демо: поток симулирован"
-];
-function typeLogs(){
-  term.textContent = '';
-  let li = 0, ci = 0;
-  function step(){
-    if(li >= logs.length) { return; }
-    const line = logs[li];
-    if(ci <= line.length){
-      term.textContent = logs.slice(0,li).join('\n') + (li ? '\n' : '') + line.slice(0,ci);
-      ci++;
-      setTimeout(step, 30 + Math.random()*40);
-    } else {
-      li++; ci=0;
-      setTimeout(step, 600);
+    function spawnObstacle() {
+      obstacles.push({ x: canvas.width, y: ground - 60, w: 50, h: 60 });
     }
-  }
-  step();
-}
-document.getElementById('typingBtn').addEventListener('click', ()=> typeLogs());
-setTimeout(()=> typeLogs(), 600);
 
-/* copy link */
-document.querySelectorAll('.btn').forEach(b => {
-  if(b.id === 'copyLink') return;
-});
-/* quick copy: attach to ctrl+c like behavior on click of title */
-document.querySelector('.title').addEventListener('click', ()=> {
-  try { navigator.clipboard.writeText(location.href); alert('Ссылка скопирована'); }
-  catch(e){ /* ignore */ }
-});
+    function spawnBurger() {
+      burgers.push({ x: canvas.width, y: ground - 100, w: 50, h: 40 });
+    }
 
-/* swatches change accent */
-document.getElementById('swatchRow').addEventListener('click', (e)=> {
-  const s = e.target.closest('.swatch');
-  if(!s) return;
-  const c = s.dataset.color;
-  document.documentElement.style.setProperty('--accent', c);
-});
+    function jump() {
+      if (!player.jumping) {
+        player.vy = -25;
+        player.jumping = true;
+      }
+    }
 
-/* toggle matrix via hiding canvas or starting interval */
-document.getElementById('toggleMatrixBtn').addEventListener('click', ()=> {
-  if(bgInterval){
-    clearInterval(bgInterval);
-    bgInterval = null;
-    bgCanvas.style.opacity = '0';
-  } else {
-    bgCanvas.style.opacity = '1';
-    bgInterval = setInterval(drawBg, 60);
-  }
-});
+    document.addEventListener("keydown", e => { if (e.code === "Space") jump(); });
+    document.addEventListener("touchstart", jump);
 
-/* adjust glow */
-document.getElementById('glow').addEventListener('input', (e)=> {
-  const val = e.target.value;
-  document.querySelector('.title').style.textShadow = `0 0 ${val}px ${getComputedStyle(document.documentElement).getPropertyValue('--accent')}`;
-});
+    let frame = 0;
 
-/* accessibility: space toggles freeze */
-document.addEventListener('keydown', (e)=> {
-  if(e.code === 'Space') {
-    freeze = !freeze;
-    document.getElementById('freezeBtn').textContent = freeze ? 'Разморозить' : 'Freeze';
-  }
-});
-</script>
+    function update() {
+      frame++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // фон с домом
+      ctx.drawImage(houseImg, 0, ground - 250, 400, 250);
+
+      // земля
+      ctx.fillStyle = "#228B22";
+      ctx.fillRect(0, ground, canvas.width, 200);
+
+      // физика
+      player.y += player.vy;
+      player.vy += 1.5;
+      if (player.y > ground - player.h) {
+        player.y = ground - player.h;
+        player.jumping = false;
+      }
+
+      // спавн препятствий и бургеров
+      if (frame % 90 === 0) spawnObstacle();
+      if (frame % 600 === 0) spawnBurger();
+
+      // движение препятствий
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        let o = obstacles[i];
+        o.x -= gameSpeed;
+        ctx.drawImage(cactusImg, o.x, o.y, o.w, o.h);
+
+        if (!player.invincible &&
+            player.x < o.x + o.w && player.x + player.w > o.x &&
+            player.y + player.h > o.y) {
+          location.reload();
+        }
+
+        if (o.x + o.w < 0) obstacles.splice(i, 1);
+      }
+
+      // движение бургеров
+      for (let i = burgers.length - 1; i >= 0; i--) {
+        let b = burgers[i];
+        b.x -= gameSpeed;
+        ctx.drawImage(burgerImg, b.x, b.y, b.w, b.h);
+        if (player.x < b.x + b.w && player.x + player.w > b.x && player.y + player.h > b.y) {
+          player.invincible = true;
+          invincibleTimer = 900;
+          burgers.splice(i, 1);
+        }
+        if (b.x + b.w < 0) burgers.splice(i, 1);
+      }
+
+      // инвул
+      if (player.invincible) {
+        invincibleTimer--;
+        if (invincibleTimer <= 0) player.invincible = false;
+        ctx.globalAlpha = 0.6 + 0.4 * Math.sin(frame / 5);
+      } else {
+        ctx.globalAlpha = 1;
+      }
+
+      // рисуем игрока
+      ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
+      ctx.globalAlpha = 1;
+
+      // счёт и уровни
+      score++;
+      if (score % 2000 === 0) {
+        level++;
+        gameSpeed += 1.5;
+      }
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "30px monospace";
+      ctx.fillText("Счёт: " + score, 30, 50);
+      ctx.fillText("Уровень: " + level, 30, 90);
+
+      // конец игры — встреча с девушкой
+      if (score > 5000 && !girlMet) {
+        girlMet = true;
+        setTimeout(() => {
+          meetGirl();
+        }, 500);
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    function meetGirl() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(houseImg, 0, ground - 250, 400, 250);
+      ctx.fillStyle = "#228B22";
+      ctx.fillRect(0, ground, canvas.width, 200);
+      ctx.drawImage(playerImg, canvas.width / 2 - 150, ground - 80, 80, 80);
+      ctx.drawImage(girlImg, canvas.width / 2 + 50, ground - 80, 80, 80);
+
+      let hearts = [];
+      for (let i = 0; i < 20; i++) {
+        hearts.push({ x: canvas.width / 2 + Math.random() * 100 - 50, y: ground - 150, vy: -Math.random() * 3 - 2 });
+      }
+
+      let anim = setInterval(() => {
+        ctx.drawImage(houseImg, 0, ground - 250, 400, 250);
+        ctx.fillStyle = "#228B22";
+        ctx.fillRect(0, ground, canvas.width, 200);
+        ctx.drawImage(playerImg, canvas.width / 2 - 150, ground - 80, 80, 80);
+        ctx.drawImage(girlImg, canvas.width / 2 + 50, ground - 80, 80, 80);
+        hearts.forEach(h => {
+          ctx.drawImage(heartImg, h.x, h.y, 30, 30);
+          h.y += h.vy;
+        });
+      }, 50);
+
+      setTimeout(() => {
+        clearInterval(anim);
+        ctx.fillStyle = "#fff";
+        ctx.font = "40px monospace";
+        ctx.fillText("❤️ Они снова вместе ❤️", canvas.width / 2 - 200, canvas.height / 2);
+      }, 5000);
+    }
+
+    update();
+  </script>
 </body>
 </html>
