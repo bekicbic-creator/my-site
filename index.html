@@ -1,217 +1,150 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pixel Run Love</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100%;
-      background: #87CEEB;
-      font-family: monospace;
-    }
-    canvas {
-      display: block;
-      background: linear-gradient(#ff9966, #ff5e62);
-      width: 100vw;
-      height: 100vh;
-    }
-    #msg {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.5);
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 18px;
-    }
-  </style>
-</head>
-<body>
-  <div id="msg">Нажми [Пробел] или [Тап], чтобы прыгнуть 🍔</div>
-  <canvas id="game"></canvas>
-  <audio id="music" loop>
-    <source src="https://cdn.pixabay.com/audio/2023/01/10/audio_97c5beea75.mp3" type="audio/mpeg">
-  </audio>
-  <script>
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+import pygame
+import random
+import sys
+import math
 
-    const music = document.getElementById("music");
-    music.volume = 0.3;
-    music.play().catch(()=>{});
+pygame.init()
 
-    // === Игровые ресурсы ===
-    const playerImg = new Image();
-    playerImg.src = "https://i.ibb.co/4mxR2wC/player.png"; // пиксельный парень
-    const girlImg = new Image();
-    girlImg.src = "https://i.ibb.co/ZTkgfXy/girl.png"; // пиксельная девушка
-    const cactusImg = new Image();
-    cactusImg.src = "https://i.ibb.co/YfF25QF/cactus.png";
-    const burgerImg = new Image();
-    burgerImg.src = "https://i.ibb.co/JvgbxwH/burger.png";
-    const heartImg = new Image();
-    heartImg.src = "https://i.ibb.co/3d5tmCX/heart.png";
-    const houseImg = new Image();
-    houseImg.src = "https://i.ibb.co/QYdKdZN/house.png";
+# --- Настройки окна ---
+WIDTH, HEIGHT = 800, 600
+win = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Burger Rush Pixel")
 
-    let player = { x: 100, y: 0, w: 80, h: 80, vy: 0, jumping: false, invincible: false };
-    let ground = canvas.height - 150;
-    let obstacles = [];
-    let burgers = [];
-    let gameSpeed = 8;
-    let score = 0;
-    let level = 1;
-    let girlMet = false;
-    let invincibleTimer = 0;
+# --- Цвета ---
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+SKY = (150, 200, 255)
+GREEN = (80, 200, 80)
+YELLOW = (255, 230, 0)
+RED = (255, 80, 80)
 
-    function spawnObstacle() {
-      obstacles.push({ x: canvas.width, y: ground - 60, w: 50, h: 60 });
-    }
+# --- Музыка и звуки ---
+boost_sound = pygame.mixer.Sound(pygame.mixer.Sound(file=None))
+pygame.mixer.Sound.set_volume(boost_sound, 0.6)
 
-    function spawnBurger() {
-      burgers.push({ x: canvas.width, y: ground - 100, w: 50, h: 40 });
-    }
+# --- Игровые параметры ---
+clock = pygame.time.Clock()
+gravity = 0.5
 
-    function jump() {
-      if (!player.jumping) {
-        player.vy = -25;
-        player.jumping = true;
-      }
-    }
+# --- Классы ---
+class Player:
+    def __init__(self):
+        self.x = WIDTH // 2
+        self.y = HEIGHT - 120
+        self.width = 32
+        self.height = 32
+        self.vel_y = 0
+        self.on_ground = False
+        self.boosted = False
+        self.boost_timer = 0
+        self.aura_radius = 0
 
-    document.addEventListener("keydown", e => { if (e.code === "Space") jump(); });
-    document.addEventListener("touchstart", jump);
+    def draw(self):
+        color = (0, 150, 255) if not self.boosted else (255, 255, 0)
+        pygame.draw.rect(win, color, (self.x, self.y, self.width, self.height))
+        if self.boosted:
+            self.aura_radius = 50 + int(math.sin(pygame.time.get_ticks() * 0.01) * 5)
+            pygame.draw.circle(win, (255, 255, 150), (self.x + 16, self.y + 16), self.aura_radius, 2)
 
-    let frame = 0;
+    def move(self, keys):
+        speed = 5 if not self.boosted else 9
+        if keys[pygame.K_a]:
+            self.x -= speed
+        if keys[pygame.K_d]:
+            self.x += speed
+        if self.x < 0: self.x = 0
+        if self.x > WIDTH - self.width: self.x = WIDTH - self.width
 
-    function update() {
-      frame++;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    def jump(self):
+        if self.on_ground:
+            self.vel_y = -10
+            self.on_ground = False
 
-      // фон с домом
-      ctx.drawImage(houseImg, 0, ground - 250, 400, 250);
+    def update(self):
+        self.vel_y += gravity
+        self.y += self.vel_y
+        if self.y + self.height >= HEIGHT - 60:
+            self.y = HEIGHT - 60 - self.height
+            self.vel_y = 0
+            self.on_ground = True
 
-      // земля
-      ctx.fillStyle = "#228B22";
-      ctx.fillRect(0, ground, canvas.width, 200);
+        # таймер буста
+        if self.boosted:
+            self.boost_timer -= 1
+            if self.boost_timer <= 0:
+                self.boosted = False
 
-      // физика
-      player.y += player.vy;
-      player.vy += 1.5;
-      if (player.y > ground - player.h) {
-        player.y = ground - player.h;
-        player.jumping = false;
-      }
+class Burger:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH - 32)
+        self.y = -50
+        self.speed = random.uniform(2, 5)
 
-      // спавн препятствий и бургеров
-      if (frame % 90 === 0) spawnObstacle();
-      if (frame % 600 === 0) spawnBurger();
+    def update(self):
+        self.y += self.speed
+        if self.y > HEIGHT:
+            self.y = -50
+            self.x = random.randint(0, WIDTH - 32)
 
-      // движение препятствий
-      for (let i = obstacles.length - 1; i >= 0; i--) {
-        let o = obstacles[i];
-        o.x -= gameSpeed;
-        ctx.drawImage(cactusImg, o.x, o.y, o.w, o.h);
+    def draw(self):
+        pygame.draw.rect(win, (210, 100, 30), (self.x, self.y, 32, 20))
+        pygame.draw.rect(win, (255, 220, 120), (self.x, self.y + 8, 32, 4))
+        pygame.draw.rect(win, GREEN, (self.x, self.y + 4, 32, 4))
 
-        if (!player.invincible &&
-            player.x < o.x + o.w && player.x + player.w > o.x &&
-            player.y + player.h > o.y) {
-          location.reload();
-        }
+# --- Функция столкновения ---
+def collide(a, b):
+    return (a.x < b.x + 32 and
+            a.x + a.width > b.x and
+            a.y < b.y + 20 and
+            a.y + a.height > b.y)
 
-        if (o.x + o.w < 0) obstacles.splice(i, 1);
-      }
+# --- Основная функция игры ---
+def main():
+    player = Player()
+    burgers = [Burger() for _ in range(4)]
+    score = 0
+    font = pygame.font.SysFont("pixelmix", 28)
+    run = True
 
-      // движение бургеров
-      for (let i = burgers.length - 1; i >= 0; i--) {
-        let b = burgers[i];
-        b.x -= gameSpeed;
-        ctx.drawImage(burgerImg, b.x, b.y, b.w, b.h);
-        if (player.x < b.x + b.w && player.x + player.w > b.x && player.y + player.h > b.y) {
-          player.invincible = true;
-          invincibleTimer = 900;
-          burgers.splice(i, 1);
-        }
-        if (b.x + b.w < 0) burgers.splice(i, 1);
-      }
+    while run:
+        clock.tick(60)
+        win.fill(SKY)
+        pygame.draw.rect(win, GREEN, (0, HEIGHT - 60, WIDTH, 60))
 
-      // инвул
-      if (player.invincible) {
-        invincibleTimer--;
-        if (invincibleTimer <= 0) player.invincible = false;
-        ctx.globalAlpha = 0.6 + 0.4 * Math.sin(frame / 5);
-      } else {
-        ctx.globalAlpha = 1;
-      }
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    player.jump()
 
-      // рисуем игрока
-      ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
-      ctx.globalAlpha = 1;
+        keys = pygame.key.get_pressed()
+        player.move(keys)
+        player.update()
 
-      // счёт и уровни
-      score++;
-      if (score % 2000 === 0) {
-        level++;
-        gameSpeed += 1.5;
-      }
+        # Обновление бургеров
+        for burger in burgers:
+            burger.update()
+            burger.draw()
+            if collide(player, burger):
+                score += 1
+                burger.y = -50
+                burger.x = random.randint(0, WIDTH - 32)
+                # буст
+                player.boosted = True
+                player.boost_timer = 60 * 15 // 10  # ~15 сек
+                boost_sound.play()
 
-      ctx.fillStyle = "#fff";
-      ctx.font = "30px monospace";
-      ctx.fillText("Счёт: " + score, 30, 50);
-      ctx.fillText("Уровень: " + level, 30, 90);
+        player.draw()
 
-      // конец игры — встреча с девушкой
-      if (score > 5000 && !girlMet) {
-        girlMet = true;
-        setTimeout(() => {
-          meetGirl();
-        }, 500);
-      }
+        # интерфейс
+        score_text = font.render(f"Счёт: {score}", True, BLACK)
+        win.blit(score_text, (10, 10))
+        if player.boosted:
+            timer_text = font.render(f"Буст: {player.boost_timer//60}s", True, YELLOW)
+            win.blit(timer_text, (10, 40))
 
-      requestAnimationFrame(update);
-    }
+        pygame.display.update()
 
-    function meetGirl() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(houseImg, 0, ground - 250, 400, 250);
-      ctx.fillStyle = "#228B22";
-      ctx.fillRect(0, ground, canvas.width, 200);
-      ctx.drawImage(playerImg, canvas.width / 2 - 150, ground - 80, 80, 80);
-      ctx.drawImage(girlImg, canvas.width / 2 + 50, ground - 80, 80, 80);
-
-      let hearts = [];
-      for (let i = 0; i < 20; i++) {
-        hearts.push({ x: canvas.width / 2 + Math.random() * 100 - 50, y: ground - 150, vy: -Math.random() * 3 - 2 });
-      }
-
-      let anim = setInterval(() => {
-        ctx.drawImage(houseImg, 0, ground - 250, 400, 250);
-        ctx.fillStyle = "#228B22";
-        ctx.fillRect(0, ground, canvas.width, 200);
-        ctx.drawImage(playerImg, canvas.width / 2 - 150, ground - 80, 80, 80);
-        ctx.drawImage(girlImg, canvas.width / 2 + 50, ground - 80, 80, 80);
-        hearts.forEach(h => {
-          ctx.drawImage(heartImg, h.x, h.y, 30, 30);
-          h.y += h.vy;
-        });
-      }, 50);
-
-      setTimeout(() => {
-        clearInterval(anim);
-        ctx.fillStyle = "#fff";
-        ctx.font = "40px monospace";
-        ctx.fillText("❤️ Они снова вместе ❤️", canvas.width / 2 - 200, canvas.height / 2);
-      }, 5000);
-    }
-
-    update();
-  </script>
-</body>
-</html>
+main()
