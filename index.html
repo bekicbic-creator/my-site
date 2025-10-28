@@ -2,11 +2,82 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Мой первый сайт</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сайт Тохира 😎</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #00ff66;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2rem;
+      text-shadow: 0 0 10px #00ff66;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00ff66; }
+      to { text-shadow: 0 0 20px #00ff66, 0 0 30px #00ff66; }
+    }
+
+    button {
+      margin-top: 20px;
+      background: none;
+      border: 2px solid #00ff66;
+      color: #00ff66;
+      font-size: 1.2rem;
+      padding: 10px 25px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #00ff66;
+      color: #000;
+      box-shadow: 0 0 20px #00ff66;
+    }
+
+    .message {
+      margin-top: 25px;
+      font-size: 1.4rem;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .message.show {
+      opacity: 1;
+    }
+
+    .cursor {
+      display: inline-block;
+      background: #00ff66;
+      width: 8px;
+      height: 20px;
+      margin-left: 5px;
+      animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+  </style>
 </head>
-<body style="background-color: black; color: lime; text-align: center; font-family: Arial;">
-  <h1>Привет, я Тохир 👊</h1>
-  <p>Это мой первый сайт. Сделал сам, без чьей-то помощи.</p>
-  <button onclick="alert('Ты красавчик, брат!')">Нажми сюда</button>
-</body>
-</html>
+<body>
+  <h1>Добро пожаловать на сайт Тохира<span class="cursor"></span></h1>
+  <button onclick="showMessage()">Нажми сюда</button>
+  <div class="message" id="msg">Красава, брат 💪🔥</div>
+
+  <script>
+    function showMessage() {
+      const msg = document.getElementById("msg");
+      msg.classList.add
