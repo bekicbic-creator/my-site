@@ -1,83 +1,54 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Сайт Тохира 😎</title>
-  <style>
-    body {
-      background-color: #000;
-      color: #00ff66;
-      font-family: 'Courier New', monospace;
-      text-align: center;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
+/* ========== PRANK (с подтверждением) ========== */
+const prankBtn = document.getElementById('prankBtn');
+const modal = document.getElementById('confirmModal');
+const confirmPrank = document.getElementById('confirmPrank');
+const cancelPrank = document.getElementById('cancelPrank');
 
-    h1 {
-      font-size: 2rem;
-      text-shadow: 0 0 10px #00ff66;
-      animation: glow 2s infinite alternate;
-    }
+prankBtn.addEventListener('click', ()=> {
+  // показываем модалку с предупреждением
+  modal.classList.add('show');
+});
 
-    @keyframes glow {
-      from { text-shadow: 0 0 10px #00ff66; }
-      to { text-shadow: 0 0 20px #00ff66, 0 0 30px #00ff66; }
-    }
+cancelPrank.addEventListener('click', ()=> modal.classList.remove('show'));
 
-    button {
-      margin-top: 20px;
-      background: none;
-      border: 2px solid #00ff66;
-      color: #00ff66;
-      font-size: 1.2rem;
-      padding: 10px 25px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+confirmPrank.addEventListener('click', ()=> {
+  modal.classList.remove('show');
+  // резкое визуальное наложение + звук
+  // создаём fullscreen элемент
+  const overlay = document.createElement('div');
+  overlay.style.position='fixed';
+  overlay.style.inset='0';
+  overlay.style.zIndex='9999';
+  overlay.style.background='#000';
+  overlay.style.display='flex';
+  overlay.style.alignItems='center';
+  overlay.style.justifyContent='center';
+  overlay.style.flexDirection='column';
+  overlay.style.transition='opacity 0.3s';
+  overlay.innerHTML = '<img src="images/3.jpg" style="max-width:90%;max-height:90%;border-radius:6px;box-shadow:0 0 40px rgba(255,0,0,0.12)"><div style="color:var(--neon);margin-top:18px;font-size:1.6rem">Пранк активирован</div>';
+  document.body.appendChild(overlay);
 
-    button:hover {
-      background: #00ff66;
-      color: #000;
-      box-shadow: 0 0 20px #00ff66;
-    }
+  // play scream
+  scream.currentTime = 0;
+  scream.play().catch(()=>{ alert('Браузер заблокировал воспроизведение звука — нажми "Включить фон" сначала.'); });
 
-    .message {
-      margin-top: 25px;
-      font-size: 1.4rem;
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
+  // эффект вспышки + камера shake (css)
+  overlay.animate([{filter:'brightness(0.2)'},{filter:'brightness(2)'}],{duration:180,iterations:2});
+  document.body.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(6px)'},{transform:'translateY(0)'}],{duration:300,iterations:4});
 
-    .message.show {
-      opacity: 1;
-    }
+  // удаляем overlay через 3.5s
+  setTimeout(()=>{ overlay.style.opacity='0'; setTimeout(()=>overlay.remove(),400); }, 3500);
+});
 
-    .cursor {
-      display: inline-block;
-      background: #00ff66;
-      width: 8px;
-      height: 20px;
-      margin-left: 5px;
-      animation: blink 1s steps(1) infinite;
-    }
-
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
-  </style>
-</head>
-<body>
-  <h1>Добро пожаловать на сайт Тохира<span class="cursor"></span></h1>
-  <button onclick="showMessage()">Нажми сюда</button>
-  <div class="message" id="msg">Красава, брат 💪🔥</div>
-
-  <script>
-    function showMessage() {
-      const msg = document.getElementById("msg");
-      msg.classList.add
+/* ========== DOWNLOAD BUTTON placeholder ========= */
+document.getElementById('dlBtn').addEventListener('click', function(e){
+  // если у тебя есть файл tohir_config.zip в репозитории — он скачивается.
+  // иначе показываем подсказку.
+  // (при деплое на GitHub: помести zip в root или укажи правильный путь)
+  const fakePath = 'tohir_config.zip';
+  // проверка — делаем попытку загрузить (большинство браузеров покажут 404)
+  // оставляем действие по умолчанию
+});
+</script>
+</body>
+</html>
