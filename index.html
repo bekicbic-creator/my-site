@@ -1,504 +1,329 @@
-```html
 <!doctype html>
-<html lang="ru">
+<html lang="uz">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Pixel Run — улучшенная версия</title>
+<title>Maktabdagi huquqlar — O‘quvchi va O‘qituvchi (Oʻzbekiston)</title>
+<meta name="description" content="Maktabdagi o‘quvchi va o‘qituvchi huquqlari haqida maʼlumot. Konstitutsiya, Taʼlim qonuni, VM qarorlari va murojaat shakli.">
 <style>
-  :root{--accent:#0b78d1}
-  html,body{height:100%;margin:0;background:linear-gradient(#7fd6c0,#dff7f0);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial}
-  #wrap{display:flex;flex-direction:column;align-items:center;padding:18px;gap:14px}
-  canvas{image-rendering:pixelated;border:6px solid #111;box-shadow:0 18px 50px rgba(0,0,0,0.35);background:#7fd6c0}
-  .controls{display:flex;gap:10px;align-items:center}
-  button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
-  #hud{font-weight:800;color:#08312b}
-  #credit{font-size:12px;color:#08312b;opacity:0.95}
-  @media (max-width:900px){canvas{width:92vw;height:auto}}
+  :root{
+    --primary:#1976d2;
+    --muted:#526070;
+    --bg:#f7fbff;
+    --card:#ffffff;
+    --accent:#0b78d1;
+    --glass: rgba(255,255,255,0.7);
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, Ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial;
+    background: linear-gradient(180deg,#ffffff 0%, #e8f5ff 100%);
+    color:#16324a;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* layout */
+  .container{max-width:1080px;margin:28px auto;padding:20px}
+  header{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:28px 12px}
+  header .brand{
+    display:flex;align-items:center;gap:12px;
+  }
+  header h1{margin:0;font-size:1.8rem;color:var(--primary);letter-spacing:0.2px}
+  header p{margin:0;color:var(--muted);max-width:820px}
+
+  nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
+  .navbtn{
+    background:var(--accent);color:#fff;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:600;
+    box-shadow:0 6px 18px rgba(11,120,209,0.12);transition:transform .18s ease, box-shadow .18s;}
+  .navbtn:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(11,120,209,0.14)}
+
+  main{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+  @media(max-width:980px){ main{grid-template-columns:1fr} }
+
+  /* left column */
+  .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 8px 30px rgba(8,40,60,0.06)}
+  section h2{margin:0 0 10px 0;color:var(--primary);font-size:1.25rem}
+  .grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:12px}
+  .info-card{padding:14px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfeff);border:1px solid rgba(10,30,40,0.03)}
+  .info-card h3{margin:0;font-size:1rem;color:#16324a}
+  .info-card p{margin:8px 0 0 0;color:var(--muted);font-size:0.95rem;line-height:1.45}
+
+  /* right column (aside) */
+  aside .aside-section{margin-bottom:14px}
+  .small{font-size:0.92rem;color:var(--muted)}
+
+  /* form */
+  form label{display:block;font-weight:600;margin:10px 0 6px}
+  form input, form textarea, form select{
+    width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef6;background:#fff;font-size:0.95rem;
+  }
+  button[type="submit"]{
+    background:var(--primary);color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700;margin-top:12px;
+  }
+  button.small{background:transparent;color:var(--primary);border:1px solid rgba(25,118,210,0.12);padding:8px 10px;border-radius:8px}
+
+  footer{margin-top:26px;padding:18px;text-align:center;color:var(--muted);font-size:0.92rem}
+
+  /* utilities */
+  .muted{color:var(--muted)}
+  .link{color:var(--primary);text-decoration:none;font-weight:600}
+  .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(11,120,209,0.08);color:var(--primary);font-weight:700}
+  .spaced{margin-top:10px}
+  .sources{font-size:0.92rem;color:#4c657a}
 </style>
 </head>
 <body>
-  <div id="wrap">
-    <div id="hud">Очки: <span id="scoreVal">0</span>/200 &nbsp;&nbsp; Состояние: <span id="stateVal">Ожидание</span></div>
-    <canvas id="game" width="768" height="288"></canvas>
-    <div class="controls">
-      <button id="startBtn">Начать</button>
-      <button id="restartBtn" style="display:none">Начать заново</button>
-      <div id="credit">Создатель: Муслимов Тохир — автор. (всё в одном файле)</div>
-    </div>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#bfe9ff,#8fcdf7);display:flex;align-items:center;justify-content:center;font-weight:800;color:#06324a">
+          MH
+        </div>
+        <div style="text-align:left">
+          <h1>Maktabdagi huquqlar</h1>
+          <div class="small">O‘quvchi va o‘qituvchi huquqlari, muhim qonunchilik va amaliy maslahatlar — barchasi lotin yozuvida.</div>
+        </div>
+      </div>
+
+      <p>Bu sayt maktab jamoasi uchun mo‘ljallangan — huquqlarni bilish, himoya qilish va qonuniy chora koʻrish uchun qulay va tushunarli manba.</p>
+
+      <nav aria-label="Asosiy bo‘limlar">
+        <a class="navbtn" href="#oquvchi">O‘quvchi huquqlari</a>
+        <a class="navbtn" href="#oqituvchi">O‘qituvchi huquqlari</a>
+        <a class="navbtn" href="#qonunlar">Qonunlar</a>
+        <a class="navbtn" href="#murojaat">Murojaat</a>
+        <a class="navbtn" href="#aloqa">Aloqa</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- LEFT: main content -->
+      <div>
+        <!-- O'quvchi -->
+        <section id="oquvchi" class="card">
+          <h2>👨‍🎓 O‘quvchi huquqlari</h2>
+          <p class="muted">O‘quvchilar maktabda xavfsiz, hurmatga sazovor va adolatli muhitda o‘qish huquqiga ega.</p>
+          <div class="grid-cards spaced">
+            <div class="info-card">
+              <h3>Taʼlim olish huquqi</h3>
+              <p>Har bir shaxs bepul umumiy taʼlim olish huquqiga ega. Maktablar taʼlim sifatini taʼminlashi shart.</p>
+            </div>
+            <div class="info-card">
+              <h3>Xavfsiz va hurmatli muhit</h3>
+              <p>Maktabda jismoniy va ruhiy zo‘ravonlik, kamsitish qatʼiyan taqiqlanadi.</p>
+            </div>
+            <div class="info-card">
+              <h3>Fikr va ishtirok etish</h3>
+              <p>O‘quvchilar o‘z fikrini bildirish, maktab hayotida konstruktiv ishtirok etish huquqiga ega.</p>
+            </div>
+            <div class="info-card">
+              <h3>Maxfiylik va shaxsiy daxlsizlik</h3>
+              <p>O‘quvchilarning shaxsiy maʼlumotlari va oilaviy holati himoyalanishi kerak.</p>
+            </div>
+            <div class="info-card">
+              <h3>Shikoyat va himoya</h3>
+              <p>Huquqlari buzilganda o‘quvchi ota-ona, maktab rahbariyati yoki vakolatli organlarga murojaat qilishi mumkin.</p>
+            </div>
+            <div class="info-card">
+              <h3>Imtiyozlar va qo‘llab-quvvatlash</h3>
+              <p>Iqtidorli va zaif o‘quvchilar uchun qo‘shimcha yordam va grantlar mavjud.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- O'qituvchi -->
+        <section id="oqituvchi" class="card spaced">
+          <h2>👩‍🏫 O‘qituvchi huquqlari</h2>
+          <p class="muted">O‘qituvchilar mehnat huquqlari, kasbiy hurmat va xavfsiz sharoitlarga ega bo‘lishi kerak.</p>
+          <div class="grid-cards spaced">
+            <div class="info-card">
+              <h3>Mehnat va to‘lov</h3>
+              <p>O‘qituvchilar mehnat shartnomasi asosida adolatli ish haqi va ijtimoiy kafolatlarga ega.</p>
+            </div>
+            <div class="info-card">
+              <h3>Kafolatlangan huquq va himoya</h3>
+              <p>Pedagoglar kasbiy obro‘si va shaʼni himoyalanishi, nohaq ayblovlarga duch kelmasligi kerak.</p>
+            </div>
+            <div class="info-card">
+              <h3>Kasbiy rivojlanish</h3>
+              <p>O‘qituvchilar doimiy malaka oshirish va yangi metodlarni joriy etishda ishtirok etish huquqiga ega.</p>
+            </div>
+            <div class="info-card">
+              <h3>Ish sharoitlari va xavfsizlik</h3>
+              <p>Maktab xodimlari ish joyida xavfsizlik va ishga mos sharoitlar bilan taʼminlanadi.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Qonunlar -->
+        <section id="qonunlar" class="card spaced">
+          <h2>📜 Asosiy qonunlar va hujjatlar</h2>
+          <p class="muted">Quyida maktab faoliyatiga bevosita taʼsir etuvchi muhim qonunlar va ularning qisqacha mazmuni keltirilgan.</p>
+
+          <div class="grid-cards spaced">
+            <div class="info-card">
+              <h3>Konstitutsiya (41-modda va boshqalar)</h3>
+              <p>Har bir fuqaro umuman taʼlim olish huquqiga ega; davlat taʼlimning taʼminoti va sifatini nazorat qiladi.</p>
+              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/20596" target="_blank" rel="noopener">Konstitutsiyani batafsil o‘qish</a></p>
+            </div>
+
+            <div class="info-card">
+              <h3>“Taʼlim to‘g‘risida”gi Qonun</h3>
+              <p>Taʼlim tizimi, qatnashuvchilarning huquq va majburiyatlari, umumiy tamoyillar bayon etilgan.</p>
+              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/5013007" target="_blank" rel="noopener">Qonunni batafsil o‘qish</a></p>
+            </div>
+
+            <div class="info-card">
+              <h3>Vazirlar Mahkamasining 139-son qarori</h3>
+              <p>“Umumiy o‘rta taʼlim to‘g‘risidagi nizom” — maktablar faoliyati, o‘quv jarayoni va pedagoglarning meʼyoriy huquqlari belgilangan.</p>
+              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/3145806" target="_blank" rel="noopener">139-son qarorni o‘qish</a></p>
+            </div>
+
+            <div class="info-card">
+              <h3>Bola huquqlari to‘g‘risidagi Konvensiya (BMT)</h3>
+              <p>Bolalarning asosiy huquqlari — hayot, taʼlim, himoya va rivojlanish kafolatlari.</p>
+              <p class="sources spaced"><a class="link" href="https://www.ohchr.org/en/instruments-mechanisms/instruments/convention-rights-child" target="_blank" rel="noopener">Konvensiyani o‘qish (ingliz)</a></p>
+            </div>
+
+            <div class="info-card">
+              <h3>Mehnat kodeksi</h3>
+              <p>O‘qituvchilar mehnati, ta\'til, ish shartnomasi va ijtimoiy kafolatlar nazarda tutilgan.</p>
+              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/6496144" target="_blank" rel="noopener">Mehnat kodeksini o‘qish</a></p>
+            </div>
+
+            <div class="info-card">
+              <h3>Maʼmuriy javobgarlik kodeksi</h3>
+              <p>Zo‘ravonlik, haqorat va kamsitish holatlari uchun maʼmuriy choralar belgilangan.</p>
+              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/97664" target="_blank" rel="noopener">Kodeksni o‘qish</a></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Murojaat -->
+       <section id="murojaat">
+  <h2>📩 Murojaat yuborish</h2>
+  <form action="https://formspree.io/f/xyzbwrno" method="POST">
+    <label>Ismingiz:</label>
+    <input type="text" name="ism" required placeholder="Ismingizni kiriting">
+
+    <label>Kim sifatida murojaat qilmoqdasiz:</label>
+    <select name="rol" required>
+      <option value="oquvchi">O‘quvchi</option>
+      <option value="oqituvchi">O‘qituvchi</option>
+      <option value="otaona">Ota-ona</option>
+    </select>
+
+    <label>Murojaat mavzusi:</label>
+    <input type="text" name="mavzu" required placeholder="Mavzuni kiriting">
+
+    <label>Xabaringiz:</label>
+    <textarea name="xabar" rows="5" required placeholder="Murojaatingizni yozing..."></textarea>
+
+    <button type="submit">Yuborish</button>
+  </form>
+</section>
+
+          <h2>📩 Murojaat yuborish</h2>
+          <p class="muted">Quyidagi shakl orqali o‘z murojaatingizni yuboring. Ushbu forma Formspree orqali to‘g‘ridan-to‘g‘ri sizning email manzilingizga yetkazilishi mumkin.</p>
+
+          <!-- FORM: action ni Formspree dagi form_id bilan almashtiring.
+               - Formspree da ro'yxatdan o'tib form yaratganingizdan so'ng action="https://formspree.io/f/your_form_id" bo'ladi.
+               - Agar server tomonlama qabul kerak bo'lsa, actionni mos backend URL bilan almashtiring. -->
+          <form id="contactForm" action="https://formspree.io/f/your_form_id" method="POST">
+            <label for="ism">To‘liq ism</label>
+            <input id="ism" name="ism" type="text" placeholder="Ismingiz va familyangiz" required>
+
+            <label for="rol">Siz kim sifatida murojaat qilmoqdasiz?</label>
+            <select id="rol" name="rol" required>
+              <option value="">— Tanlang —</option>
+              <option value="oquvchi">O‘quvchi</option>
+              <option value="oqituvchi">O‘qituvchi</option>
+              <option value="ota-ona">Ota-ona</option>
+              <option value="boshqa">Boshqa</option>
+            </select>
+
+            <label for="mavzu">Murojaat mavzusi</label>
+            <input id="mavzu" name="mavzu" type="text" placeholder="Murojaat mavzusi" required>
+
+            <label for="xabar">Murojaat matni</label>
+            <textarea id="xabar" name="xabar" rows="6" placeholder="Murojaat mazmunini batafsil yozing" required></textarea>
+
+            <!-- Optional: email field so that Formspree replies go to sender -->
+            <label for="email">Sizning email (javob olish uchun)</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com">
+
+            <button type="submit">Yuborish</button>
+          </form>
+
+          <p class="spaced small muted">Eslatma: Formspree xizmatidan foydalanish uchun form action ichidagi <code>your_form_id</code> ni o‘zingizning Formspree identifikatoriga almashtiring. Agar serveringiz bo‘lsa, actionni o‘sha manzilga yo‘naltiring.</p>
+        </section>
+
+      </div>
+
+      <!-- RIGHT: aside -->
+      <aside>
+        <div class="card aside-section">
+          <h3>Tezkor manbalar</h3>
+          <p class="muted">Rasmiy va ishonchli sahifalarga havolalar:</p>
+          <ul style="padding-left:16px;color:var(--muted);margin-top:8px">
+            <li><a class="link" href="https://lex.uz" target="_blank" rel="noopener">Lex.uz — rasmiy qonunchilik bazasi</a></li>
+            <li><a class="link" href="https://www.uzedu.uz" target="_blank" rel="noopener">Xalq taʼlimi vazirligi</a></li>
+            <li><a class="link" href="https://ombudsman.uz" target="_blank" rel="noopener">Ombudsman (fuqarolik nazorati)</a></li>
+            <li><a class="link" href="https://www.ohchr.org" target="_blank" rel="noopener">BMT – Inson huquqlari</a></li>
+          </ul>
+        </div>
+
+        <div class="card aside-section">
+          <h3>Favqulodda aloqalar</h3>
+          <p class="small">Agar darhol yordam kerak bo‘lsa, quyidagi raqamlar bilan bog‘laning:</p>
+          <p class="spaced"><b>1146</b> — Bolalar ishonch telefoni (maʼlumot uchun)</p>
+          <p class="spaced"><b>108</b> — Mahalliy favqulodda xizmatlar (masalan, qonuniy yordam uchun yo‘naltirish)</p>
+        </div>
+
+        <div class="card aside-section">
+          <h3>Muallif</h3>
+          <p class="muted">Sayt muallifi: <b>Muslimov Tohir</b></p>
+          <p class="small">Agar sayt mazmunida yoki qonuniy maʼlumotlarda xato sezsangiz, iltimos murojaat yuboring — biz yangilaymiz.</p>
+          <div class="spaced"><a class="link" href="#murojaat">Murojaat yuborish</a></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <div>© 2025 Maktabdagi huquqlar — Muallif: <strong>Muslimov Tohir</strong></div>
+      <div class="spaced sources">Manbalar: Konstitutsiya, Taʼlim toʻgʻrisida Qonun, Vazirlar Mahkamasining 139-son qarori, Mehnat kodeksi, Maʼmuriy kodeks. Rasmiy matnlar uchun <a class="link" href="https://lex.uz" target="_blank" rel="noopener">lex.uz</a> sahifasiga murojaat qiling.</div>
+    </footer>
   </div>
 
-<script>
-/*
-  Улучшенная версия: более детализированная пиксельная графика, плавный параллакс,
-  персонаж в голубой футболке и синих джинсах, 8-bit звуки, всё в одном файле.
-  Управление: пробел / клик / тап — прыжок.
-*/
-
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = false;
-const W = canvas.width, H = canvas.height;
-const groundY = H - 56;
-
-const scoreEl = document.getElementById('scoreVal');
-const stateEl = document.getElementById('stateVal');
-const startBtn = document.getElementById('startBtn');
-const restartBtn = document.getElementById('restartBtn');
-
-let running = false, endingActive = false;
-let score = 0;
-let gameSpeed = 1.8;
-
-let obstacles = [], cans = [];
-let spawnTimer = 0, spawnInterval = 130;
-let canTimer = 0, canInterval = 900;
-
-const gravity = 0.82;
-const jumpPower = -13.8;
-
-// ---------------- Audio (simple 8-bit) ----------------
-let audioCtx = null;
-function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-function tone(freq,dur=0.10,type='square',vol=0.12){
-  ensureAudio();
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = type; o.frequency.value = freq;
-  g.gain.value = 0.0001;
-  o.connect(g); g.connect(audioCtx.destination);
-  const now = audioCtx.currentTime;
-  g.gain.linearRampToValueAtTime(vol, now + 0.006);
-  o.start(now);
-  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-  o.stop(now + dur + 0.02);
-}
-function noise(dur=0.18,vol=0.12){
-  ensureAudio();
-  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
-  const d = buf.getChannelData(0);
-  for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1)*0.5;
-  const s = audioCtx.createBufferSource(); s.buffer = buf;
-  const g = audioCtx.createGain(); g.gain.value = vol;
-  s.connect(g); g.connect(audioCtx.destination); s.start();
-}
-function sfxJump(){ tone(840,0.06,'square',0.08); }
-function sfxCollect(){ tone(1240,0.10,'square',0.14); tone(1400,0.06,'square',0.08); }
-function sfxScore(){ tone(720,0.05,'square',0.07); }
-function sfxDeath(){ noise(0.22,0.14); tone(120,0.26,'square',0.12); }
-function sfxFanfare(){ tone(900,0.12,'square',0.12); setTimeout(()=>tone(1120,0.10,'square',0.12),120); setTimeout(()=>tone(1400,0.18,'square',0.14),260); }
-
-// ---------------- Sprites (built procedurally with pixel detail) ----------------
-function makeCanvas(w,h,draw){
-  const s = document.createElement('canvas'); s.width=w; s.height=h;
-  const g = s.getContext('2d'); g.imageSmoothingEnabled=false;
-  draw(g,w,h); return s;
-}
-
-// Персонаж: несколько кадров бега и стояния — голубая футболка, синие джинсы
-const heroFrames = [];
-for(let i=0;i<4;i++){
-  heroFrames.push(makeCanvas(28,40,(g,w,h)=>{
-    // рюкзак тёмный
-    g.fillStyle = '#202427'; g.fillRect(1,8,6,20);
-    g.fillStyle = '#111214'; g.fillRect(2,10,4,18);
-    // шапка/волосы
-    g.fillStyle = '#2f2f2f'; g.fillRect(9,0,10,6);
-    g.fillStyle = '#1c1c1c'; g.fillRect(10,2,8,4);
-    // лицо
-    g.fillStyle = '#ffd9b8'; g.fillRect(10,6,8,6);
-    g.fillStyle = '#2a2a2a'; g.fillRect(11,8,1,1); g.fillRect(15,8,1,1);
-    // голубая футболка (центральная часть)
-    g.fillStyle = '#4aa3ff'; g.fillRect(6,12,16,9);
-    // тональная полоска
-    g.fillStyle = '#2e83c9'; g.fillRect(6,18,16,2);
-    // руки - небольшой сдвиг по кадрам для анимации
-    if(i%2===0){ g.fillStyle = '#ffd9b8'; g.fillRect(4,14,3,8); g.fillRect(21,14,3,8); }
-    else { g.fillStyle = '#ffd9b8'; g.fillRect(4,16,3,6); g.fillRect(21,12,3,10); }
-    // джинсы
-    g.fillStyle = '#2b4e8f'; g.fillRect(6,22,6,12);
-    g.fillStyle = '#2b4e8f'; g.fillRect(16,22,6,12);
-    // тени/акценты
-    g.fillStyle = '#1f3764'; g.fillRect(6,26,6,2); g.fillRect(16,26,6,2);
-    // обувь
-    g.fillStyle = '#352b22'; g.fillRect(6,34,6,3); g.fillRect(16,34,6,3);
-    // нога в шаге (смещение)
-    if(i===1){ g.fillStyle = '#2b4e8f'; g.fillRect(6,24,6,10); g.fillRect(16,22,6,10); }
-    if(i===2){ g.fillStyle = '#2b4e8f'; g.fillRect(6,22,6,10); g.fillRect(16,24,6,10); }
-    if(i===3){ g.fillStyle = '#2b4e8f'; g.fillRect(6,23,6,10); g.fillRect(16,23,6,10); }
-    // небольшая тень под персонажем
-    g.fillStyle = 'rgba(0,0,0,0.36)'; g.fillRect(8,36,12,3);
-  }));
-}
-
-// Девушка финальная (один кадр)
-const girlSprite = makeCanvas(28,42,(g,w,h)=>{
-  g.fillStyle = '#ffdca6'; g.fillRect(9,0,10,8);
-  g.fillStyle = '#ffefc8'; g.fillRect(11,4,6,5);
-  g.fillStyle = '#ffd9b8'; g.fillRect(11,8,6,6);
-  g.fillStyle = '#c72b2b'; g.fillRect(8,16,12,18);
-  g.fillStyle = '#911919'; g.fillRect(8,30,12,4);
-  g.fillStyle = '#2b2118'; g.fillRect(10,34,4,4); g.fillRect(16,34,4,4);
-  g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(10,36,10,3);
-});
-
-// Кактус (низкий), Банка (маленькая)
-const cactusSprite = makeCanvas(14,18,(g,w,h)=>{
-  g.fillStyle = '#2f8f53'; g.fillRect(6,0,4,16);
-  g.fillStyle = '#246e3f'; g.fillRect(6,6,4,2);
-  g.fillStyle = '#2f8f53'; g.fillRect(2,8,4,4);
-  g.fillStyle = '#1f5a31'; g.fillRect(3,9,2,2);
-  g.fillStyle = '#2b4b39'; g.fillRect(0,14,14,2);
-});
-const canSprite = makeCanvas(10,12,(g,w,h)=>{
-  g.fillStyle = '#9aa0a6'; g.fillRect(3,0,4,2);
-  g.fillStyle = '#2e8bf7'; g.fillRect(2,2,6,8);
-  g.fillStyle = '#9aa0a6'; g.fillRect(2,10,6,2);
-  g.fillStyle = '#bdefff'; g.fillRect(3,4,2,1);
-});
-
-// ---------------- Background: improved, not blocky ----------------
-// We'll render layered gradients and shapes with many small rectangles to maintain pixel aesthetic but avoid crude squares
-
-function drawSky(g, t){
-  // smooth vertical band gradient (many thin horizontal rects to feel 'pixel art' but smooth)
-  const top = '#6fd6b1', mid = '#9fe6cf', bot = '#e6fbf2';
-  const steps = 120;
-  for(let i=0;i<steps;i++){
-    const mix = i/(steps-1);
-    // linear interpolation of rgb
-    const c = lerpColor(top, mid, bot, mix);
-    g.fillStyle = c;
-    g.fillRect(0, Math.floor(i*(H/steps)), W, Math.ceil(H/steps));
-  }
-
-  // sun (soft banded)
-  const sx = W - 160, sy = 56;
-  for(let r=20;r>0;r--){
-    const a = 0.6 * (1 - r/20);
-    g.fillStyle = `rgba(255,223,110,${a})`;
-    g.fillRect(sx - r, sy - Math.floor(r*0.5), r*2, Math.max(2, Math.floor(r/1.6)));
-  }
-
-  // long soft light rays - wide semi-transparent stripes, moved slowly for parallax
-  g.save();
-  g.globalAlpha = 0.24;
-  g.fillStyle = '#eefbf7';
-  for(let i=-1;i<10;i++){
-    const x = (t*0.015 + i*160) % (W+300) - 150;
-    g.fillRect(x, -30, 56, H*0.6);
-  }
-  g.restore();
-
-  // clouds — layered rounded rectangular blocks (drawn as small rectangles to keep pixel look but smoother)
-  const cloudSets = [
-    {cx: 80 + (t*0.02)%400, cy: 32, scale:1.0},
-    {cx: 240 + (t*0.013)%400, cy: 24, scale:0.9},
-    {cx: 420 + (t*0.018)%420, cy: 38, scale:1.1},
-  ];
-  g.fillStyle = '#ffffff';
-  for(const c of cloudSets){
-    const cx = (c.cx + (c.scale*20)) % (W+300) - 100;
-    const cy = c.cy;
-    drawSoftCloud(g, cx, cy, Math.round(90*c.scale), Math.round(22*c.scale));
-  }
-}
-
-function lerpColor(a,b,c, t){
-  // a,b,c are hex strings like '#rrggbb'. This blends a->b for t in [0,0.5) and b->c for t in [0.5,1]
-  function hex2rgb(h){ return [parseInt(h.substr(1,2),16), parseInt(h.substr(3,2),16), parseInt(h.substr(5,2),16)]; }
-  const A = hex2rgb(a), B = hex2rgb(b), C = hex2rgb(c);
-  if(t < 0.5){
-    const tt = t/0.5;
-    return `rgb(${Math.round(A[0]+(B[0]-A[0])*tt)},${Math.round(A[1]+(B[1]-A[1])*tt)},${Math.round(A[2]+(B[2]-A[2])*tt)})`;
-  } else {
-    const tt = (t-0.5)/0.5;
-    return `rgb(${Math.round(B[0]+(C[0]-B[0])*tt)},${Math.round(B[1]+(C[1]-B[1])*tt)},${Math.round(B[2]+(C[2]-B[2])*tt)})`;
-  }
-}
-
-function drawSoftCloud(g, cx, cy, w, h){
-  // draw cloud as several overlapping rounded blocks (approximated with rectangles to keep pixel look)
-  const parts = Math.floor(w/22);
-  for(let i=0;i<parts;i++){
-    for(let j=-1;j<=1;j++){
-      g.fillRect(Math.floor(cx + i*20 - w/2), Math.floor(cy + j*6 - h/4), Math.floor(w/parts)+6, Math.floor(h/3));
-    }
-  }
-}
-
-// distant silhouettes / city / hills
-function drawSilhouette(g, t){
-  const baseY = groundY - 84;
-  const colors = ['#2b9aa2','#2a8a93','#1f6f7a']; // layered cool colors
-  for(let layer=0; layer<3; layer++){
-    g.fillStyle = colors[layer];
-    const offset = Math.floor(t*0.01*(layer+0.3));
-    for(let x = -240 + (offset % 200); x < W + 240; x += 200){
-      const h1 = 26 + ((x+layer*37) % 70);
-      g.fillRect(x, baseY - h1 - layer*12, 160, h1 + layer*8);
-      // small spires to mimic city
-      g.fillRect(x+20, baseY - h1 - layer*12 - 14, 10, 14);
-      g.fillRect(x+90, baseY - h1 - layer*12 - 20, 8, 20);
-    }
-  }
-}
-
-// mid trees
-function drawMidTrees(g, t){
-  const treeCount = 6;
-  for(let i=0;i<treeCount;i++){
-    const speed = 0.3 + (i%2)*0.08;
-    const x = (i*140 + (t*0.14*speed)) % (W+320) - 120;
-    const trunkH = 34;
-    const tx = x+10; const ty = groundY - trunkH - 8;
-    g.fillStyle = '#7a4f2d'; g.fillRect(Math.floor(tx), ty, 4, trunkH);
-    g.fillStyle = '#2f7f3c'; g.fillRect(Math.floor(x), ty-26, 36, 26);
-    g.fillStyle = '#3f8f50'; g.fillRect(Math.floor(x)+6, ty-30, 24, 6);
-    g.fillStyle = 'rgba(0,0,0,0.06)'; g.fillRect(Math.floor(x)+6, groundY-10, 24, 4);
-  }
-}
-
-// foreground ground
-function drawForeground(g, t){
-  for(let x=0;x<W;x+=8){
-    const shade = (x/8)%4;
-    const col = shade%2===0 ? '#6cc36a' : '#63be60';
-    g.fillStyle = col; g.fillRect(x, groundY, 8, 16);
-    if((Math.abs(Math.floor(x + t*0.01)) % 28) === 0){
-      g.fillStyle = '#3a2f2b'; g.fillRect(x+2, groundY+10, 2, 2);
-    }
-  }
-  g.fillStyle = 'rgba(0,0,0,0.06)'; g.fillRect(0, groundY+14, W, 8);
-}
-
-// ---------------- Game spawn/collision/logic ----------------
-function spawnCactus(){
-  const h = 10 + Math.floor(Math.random()*8);
-  obstacles.push({ x: W + 36 + Math.random()*80, y: groundY - h, w: 14, h: h, passed:false });
-}
-function spawnCan(){
-  cans.push({ x: W + 40 + Math.random()*80, y: groundY - 44, w: 10, h: 12, collected:false });
-}
-
-function rectsOverlap(a,b){
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-
-// ---------------- Player state ----------------
-const player = {
-  x: 96,
-  y: groundY - 36,
-  w: 22,
-  h: 36,
-  vy: 0,
-  jumping:false,
-  animFrame: 0,
-  animTimer: 0,
-  inv:false,
-  invTimer: 0
-};
-
-// ---------------- Ending state ----------------
-let ending = { active:false, girlX: W + 80, timer:0, hearts:[], done:false };
-
-// ---------------- Game functions ----------------
-function resetGame(){
-  running = false; endingActive = false; ending.active = false; ending.done = false;
-  score = 0; gameSpeed = 1.8; obstacles=[]; cans=[];
-  spawnTimer = 0; spawnInterval = 130; canTimer = 0; canInterval = 900;
-  player.y = groundY - player.h; player.vy = 0; player.jumping=false; player.inv=false; player.invTimer=0;
-  ending.girlX = W + 80; ending.timer = 0; ending.hearts = [];
-  scoreEl.textContent = score; stateEl.textContent = 'Ожидание';
-  restartBtn.style.display = 'none'; startBtn.style.display = 'inline-block';
-}
-
-function startGame(){
-  resetGame();
-  running = true; startBtn.style.display = 'none'; stateEl.textContent = 'В игре';
-  ensureAudio(); tone(1000,0.06,'square',0.06);
-}
-
-function die(){
-  running = false; stateEl.textContent = 'Поражение'; restartBtn.style.display = 'inline-block'; sfxDeath();
-}
-
-function update(){
-  if(!running) return;
-
-  // physics
-  player.vy += gravity; player.y += player.vy;
-  if(player.y > groundY - player.h){ player.y = groundY - player.h; player.vy = 0; player.jumping = false; }
-
-  // animation frames
-  if(!player.jumping){
-    player.animTimer++;
-    if(player.animTimer > 8){ player.animFrame = (player.animFrame + 1) % heroFrames.length; player.animTimer = 0; }
-  } else { player.animFrame = 0; }
-
-  // spawn
-  spawnTimer++;
-  if(spawnTimer > spawnInterval){ spawnCactus(); spawnTimer = 0; spawnInterval = 110 + Math.floor(Math.random()*120); }
-  canTimer++;
-  if(canTimer > canInterval){ if(Math.random() < 0.45) spawnCan(); canTimer = 0; canInterval = 800 + Math.floor(Math.random()*1500); }
-
-  // obstacles
-  for(let i=obstacles.length-1;i>=0;i--){
-    const o = obstacles[i]; o.x -= gameSpeed;
-    const ph = { x: player.x + 3, y: player.y + 4, w: player.w - 6, h: player.h - 6 };
-    if(!o.passed && ph.x > o.x + o.w){ o.passed = true; score += 5; scoreEl.textContent = score; sfxScore(); if(score % 40 === 0) gameSpeed += 0.12; if(score >= 200 && !ending.active){ ending.active = true; running = false; stateEl.textContent = 'Финал'; startEnding(); } }
-    if(!player.inv && !ending.active){ if(rectsOverlap(ph,o)){ die(); } }
-    if(o.x + o.w < -60) obstacles.splice(i,1);
-  }
-
-  // cans
-  for(let i=cans.length-1;i>=0;i--){
-    const c = cans[i]; c.x -= gameSpeed;
-    const ph = { x: player.x + 3, y: player.y + 4, w: player.w - 6, h: player.h - 6 };
-    if(!c.collected && rectsOverlap(ph,c)){ c.collected = true; player.inv = true; player.invTimer = 15*60; document.getElementById('boostVal')?.remove(); /* just keep panel hidden until needed */ if(document.getElementById('boostVal')){}; sfxCollect(); document.getElementById('boostVal'); boostShow(); }
-    if(c.x + c.w < -60) cans.splice(i,1);
-  }
-
-  if(player.inv){
-    player.invTimer--; // update ui if shown
-    if(player.invTimer <= 0){ player.inv = false; boostHide(); }
-  }
-}
-
-// ---------------- Boost UI helpers ----------------
-function boostShow(){ boostPanel.style.display = 'inline-block'; if(!document.getElementById('boostVal')){ /* nothing */ } }
-function boostHide(){ boostPanel.style.display = 'none'; }
-
-// ---------------- Ending sequence ----------------
-function startEnding(){ ending.girlX = W + 80; ending.timer = 0; ending.hearts = []; sfxFanfare(); }
-function updateEnding(){
-  ending.girlX -= 0.9; ending.timer++;
-  if(ending.girlX < player.x + 48){
-    if(ending.timer % 6 === 0){
-      ending.hearts.push({ x: player.x + 8 + (Math.random()-0.5)*10, y: player.y - 6, vy: -1.0 - Math.random()*0.6, dx: (Math.random()-0.5)*0.8, life: 80 + Math.floor(Math.random()*40) });
-    }
-    if(ending.timer > 200) ending.done = true;
-  }
-  for(let i=ending.hearts.length-1;i>=0;i--){
-    const h = ending.hearts[i]; h.x += h.dx; h.y += h.vy; h.life--; if(h.life <= 0) ending.hearts.splice(i,1);
-  }
-}
-
-// ---------------- Render ----------------
-function render(t){
-  ctx.clearRect(0,0,W,H);
-  // sky
-  drawSky(ctx, t);
-  // silhouette
-  drawSilhouette(ctx, t);
-  // mid trees
-  drawMidTrees(ctx, t);
-  // obstacles and cans
-  for(const o of obstacles) ctx.drawImage(cactusSprite, Math.floor(o.x), Math.floor(o.y));
-  for(const c of cans) if(!c.collected) ctx.drawImage(canSprite, Math.floor(c.x), Math.floor(c.y));
-  // aura when invulnerable
-  if(player.inv){
-    ctx.save(); ctx.globalAlpha = 0.9; ctx.fillStyle = 'rgba(110,192,255,0.10)'; ctx.fillRect(player.x-8, player.y-12, player.w+32, player.h+28); ctx.restore();
-  }
-  // player
-  const bob = player.jumping ? -6 : Math.floor(Math.sin(t/140)*1.6);
-  const frame = player.animFrame;
-  ctx.drawImage(heroFrames[frame], Math.floor(player.x), Math.floor(player.y + bob));
-
-  // draw girl if ending active
-  if(ending.active){
-    ctx.drawImage(girlSprite, Math.floor(ending.girlX), groundY - 42);
-    if(ending.girlX < player.x + 48){
-      ctx.save(); ctx.fillStyle = 'rgba(255,90,130,0.06)'; ctx.fillRect(player.x - 28, player.y - 14, 160, 100); ctx.restore();
-      for(const h of ending.hearts){ ctx.fillStyle = `rgba(220,30,70,${Math.max(0,Math.min(1,h.life/120))})`; drawHeart(ctx, h.x, h.y); }
-      if(ending.done){ ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0,0,W,H); ctx.fillStyle = '#fff'; ctx.font = '22px monospace'; ctx.fillText('Они вместе ❤', W/2 - 90, H/2 - 6); restartBtn.style.display = 'inline-block'; }
-    }
-  }
-
-  // foreground
-  drawForeground(ctx, t);
-
-  // HUD text inside canvas
-  ctx.fillStyle = '#05302a'; ctx.font = '12px monospace'; ctx.fillText(`Счёт: ${score}/200`, 10, 18);
-
-  // help overlay
-  if(!running && !ending.active){
-    ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillRect(80,60,608,120);
-    ctx.fillStyle = '#072a23'; ctx.font = '14px monospace';
-    ctx.fillText('Нажмите Начать или пробел / клик / тап — чтобы прыгать', 110, 110);
-    ctx.fillText('Персонаж в голубой футболке и синих джинсах. Кактусы невысокие; банка даёт 15s неуязвимости', 110, 138);
-  }
-}
-
-function drawHeart(g,x,y){
-  g.beginPath();
-  g.moveTo(x,y);
-  g.bezierCurveTo(x-2,y-3, x-6,y-3, x-6,y+1);
-  g.bezierCurveTo(x-6,y+5, x-2,y+8, x,y+12);
-  g.bezierCurveTo(x+2,y+8, x+6,y+5, x+6,y+1);
-  g.bezierCurveTo(x+6,y-3, x+2,y-3, x,y);
-  g.fill();
-}
-
-// ---------------- Main loop ----------------
-let last = performance.now();
-function loop(ts){
-  const dt = ts - last; last = ts;
-  if(running) update();
-  else if(ending.active) updateEnding();
-  render(ts);
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
-// ---------------- Input ----------------
-function playerJump(){
-  if(!running) return;
-  if(player.jumping) return;
-  player.vy = jumpPower;
-  player.jumping = true; sfxJump();
-}
-window.addEventListener('keydown', e=>{ if(e.code === 'Space'){ e.preventDefault(); ensureAudio(); playerJump(); } });
-canvas.addEventListener('mousedown', e=>{ ensureAudio(); playerJump(); });
-canvas.addEventListener('touchstart', e=>{ ensureAudio(); e.preventDefault(); playerJump(); }, {passive:false});
-
-// ---------------- UI buttons ----------------
-startBtn.addEventListener('click', ()=>{ startGame(); });
-restartBtn.addEventListener('click', ()=>{ resetGame(); running=true; restartBtn.style.display='none'; startBtn.style.display='none'; stateEl.textContent='В игре'; ensureAudio(); tone(1000,0.06,'square',0.06); });
-
-// ---------------- Fit canvas visually ----------------
-function fitCanvas(){
-  const maxW = Math.min(window.innerWidth - 40, 1200);
-  const scale = Math.floor(maxW / W) || 1;
-  canvas.style.width = (W * scale) + 'px';
-  canvas.style.height = (H * scale) + 'px';
-}
-window.addEventListener('resize', fitCanvas); fitCanvas();
-
-// ---------------- Init ----------------
-resetGame();
-
-/* ---------------- Small helper debug/UX improvements ---------------- */
-// show boost panel if collected - implemented as simple DOM element creation for clarity
-(function ensureBoostPanel(){
-  const hud = document.querySelector('#wrap');
-  const div = document.createElement('div');
-  div.id = 'boostPanel';
-  div.style.fontWeight = '800';
-  div.style.marginTop = '6px';
-  div.innerHTML = '<span id="boostLabel" style="display:none">Буст: <span id="boostVal">15</span>s</span>';
-  hud.appendChild(div);
-})();
-
-// periodically update boost display if active
-setInterval(()=>{
-  const b = document.getElementById('boostVal');
-  const lbl = document.getElementById('boostLabel');
-  if(player.inv && b && lbl){ b.textContent = Math.max(0, Math.ceil(player.invTimer/60)); lbl.style.display='inline'; }
-  else if(lbl) lbl.style.display='none';
-}, 250);
-
-</script>
+  <!-- Minimal client-side enhancement: form submit feedback -->
+  <script>
+    (function(){
+      const form = document.getElementById('contactForm');
+      if(!form) return;
+      form.addEventListener('submit', function(e){
+        // simple client-side feedback
+        // for Formspree usage: if action is default placeholder, warn user
+        const action = form.getAttribute('action') || '';
+        if(action.includes('your_form_id')){
+          // warn user to set their Formspree id
+          if(!confirm("Siz hali Formspree form_id ni o'rnatmagansiz. Agar form_id o'rnatilmagan bo'lsa, forma yuborilmaydi. Davom etishni xohlaysizmi?")) {
+            e.preventDefault();
+            return;
+          }
+        }
+        // show simple feedback
+        const btn = form.querySelector('button[type=submit]');
+        if(btn){
+          btn.disabled = true;
+          const old = btn.textContent;
+          btn.textContent = 'Yuklanmoqda...';
+          setTimeout(()=>{ btn.disabled=false; btn.textContent = old; }, 4000);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
-```
