@@ -1,329 +1,145 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Maktabdagi huquqlar — O‘quvchi va O‘qituvchi (Oʻzbekiston)</title>
-<meta name="description" content="Maktabdagi o‘quvchi va o‘qituvchi huquqlari haqida maʼlumot. Konstitutsiya, Taʼlim qonuni, VM qarorlari va murojaat shakli.">
-<style>
-  :root{
-    --primary:#1976d2;
-    --muted:#526070;
-    --bg:#f7fbff;
-    --card:#ffffff;
-    --accent:#0b78d1;
-    --glass: rgba(255,255,255,0.7);
-    --radius:12px;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family:Inter, Ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial;
-    background: linear-gradient(180deg,#ffffff 0%, #e8f5ff 100%);
-    color:#16324a;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jasorat Sardori Markazi</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
 
-  /* layout */
-  .container{max-width:1080px;margin:28px auto;padding:20px}
-  header{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:28px 12px}
-  header .brand{
-    display:flex;align-items:center;gap:12px;
-  }
-  header h1{margin:0;font-size:1.8rem;color:var(--primary);letter-spacing:0.2px}
-  header p{margin:0;color:var(--muted);max-width:820px}
+        header {
+            background-color: #003366;
+            color: #fff;
+            padding: 25px 0;
+            text-align: center;
+        }
 
-  nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
-  .navbtn{
-    background:var(--accent);color:#fff;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:600;
-    box-shadow:0 6px 18px rgba(11,120,209,0.12);transition:transform .18s ease, box-shadow .18s;}
-  .navbtn:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(11,120,209,0.14)}
+        nav {
+            background-color: #0055a5;
+            display: flex;
+            justify-content: center;
+            padding: 12px 0;
+        }
 
-  main{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
-  @media(max-width:980px){ main{grid-template-columns:1fr} }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
 
-  /* left column */
-  .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 8px 30px rgba(8,40,60,0.06)}
-  section h2{margin:0 0 10px 0;color:var(--primary);font-size:1.25rem}
-  .grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:12px}
-  .info-card{padding:14px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfeff);border:1px solid rgba(10,30,40,0.03)}
-  .info-card h3{margin:0;font-size:1rem;color:#16324a}
-  .info-card p{margin:8px 0 0 0;color:var(--muted);font-size:0.95rem;line-height:1.45}
+        nav a:hover {
+            text-decoration: underline;
+        }
 
-  /* right column (aside) */
-  aside .aside-section{margin-bottom:14px}
-  .small{font-size:0.92rem;color:var(--muted)}
+        section {
+            padding: 35px 20px;
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
 
-  /* form */
-  form label{display:block;font-weight:600;margin:10px 0 6px}
-  form input, form textarea, form select{
-    width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef6;background:#fff;font-size:0.95rem;
-  }
-  button[type="submit"]{
-    background:var(--primary);color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700;margin-top:12px;
-  }
-  button.small{background:transparent;color:var(--primary);border:1px solid rgba(25,118,210,0.12);padding:8px 10px;border-radius:8px}
+        h2 {
+            color: #003366;
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-  footer{margin-top:26px;padding:18px;text-align:center;color:var(--muted);font-size:0.92rem}
+        ul {
+            line-height: 1.7;
+        }
 
-  /* utilities */
-  .muted{color:var(--muted)}
-  .link{color:var(--primary);text-decoration:none;font-weight:600}
-  .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(11,120,209,0.08);color:var(--primary);font-weight:700}
-  .spaced{margin-top:10px}
-  .sources{font-size:0.92rem;color:#4c657a}
-</style>
+        footer {
+            background-color: #003366;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#bfe9ff,#8fcdf7);display:flex;align-items:center;justify-content:center;font-weight:800;color:#06324a">
-          MH
-        </div>
-        <div style="text-align:left">
-          <h1>Maktabdagi huquqlar</h1>
-          <div class="small">O‘quvchi va o‘qituvchi huquqlari, muhim qonunchilik va amaliy maslahatlar — barchasi lotin yozuvida.</div>
-        </div>
-      </div>
 
-      <p>Bu sayt maktab jamoasi uchun mo‘ljallangan — huquqlarni bilish, himoya qilish va qonuniy chora koʻrish uchun qulay va tushunarli manba.</p>
+<header>
+    <h1>Jasorat Sardori Markazi</h1>
+    <p>Vatanparvarlik va Harbiy Tayyorlov Togaragi</p>
+</header>
 
-      <nav aria-label="Asosiy bo‘limlar">
-        <a class="navbtn" href="#oquvchi">O‘quvchi huquqlari</a>
-        <a class="navbtn" href="#oqituvchi">O‘qituvchi huquqlari</a>
-        <a class="navbtn" href="#qonunlar">Qonunlar</a>
-        <a class="navbtn" href="#murojaat">Murojaat</a>
-        <a class="navbtn" href="#aloqa">Aloqa</a>
-      </nav>
-    </header>
+<nav>
+    <a href="#ustav">Ustav</a>
+    <a href="#motivatsiya">Motivatsiya</a>
+    <a href="#faktlar">Qiziqarli Faktlar</a>
+    <a href="#tarbiya">Ma’naviy Tarbiya</a>
+    <a href="#galereya">Galereya</a>
+</nav>
 
-    <main>
-      <!-- LEFT: main content -->
-      <div>
-        <!-- O'quvchi -->
-        <section id="oquvchi" class="card">
-          <h2>👨‍🎓 O‘quvchi huquqlari</h2>
-          <p class="muted">O‘quvchilar maktabda xavfsiz, hurmatga sazovor va adolatli muhitda o‘qish huquqiga ega.</p>
-          <div class="grid-cards spaced">
-            <div class="info-card">
-              <h3>Taʼlim olish huquqi</h3>
-              <p>Har bir shaxs bepul umumiy taʼlim olish huquqiga ega. Maktablar taʼlim sifatini taʼminlashi shart.</p>
-            </div>
-            <div class="info-card">
-              <h3>Xavfsiz va hurmatli muhit</h3>
-              <p>Maktabda jismoniy va ruhiy zo‘ravonlik, kamsitish qatʼiyan taqiqlanadi.</p>
-            </div>
-            <div class="info-card">
-              <h3>Fikr va ishtirok etish</h3>
-              <p>O‘quvchilar o‘z fikrini bildirish, maktab hayotida konstruktiv ishtirok etish huquqiga ega.</p>
-            </div>
-            <div class="info-card">
-              <h3>Maxfiylik va shaxsiy daxlsizlik</h3>
-              <p>O‘quvchilarning shaxsiy maʼlumotlari va oilaviy holati himoyalanishi kerak.</p>
-            </div>
-            <div class="info-card">
-              <h3>Shikoyat va himoya</h3>
-              <p>Huquqlari buzilganda o‘quvchi ota-ona, maktab rahbariyati yoki vakolatli organlarga murojaat qilishi mumkin.</p>
-            </div>
-            <div class="info-card">
-              <h3>Imtiyozlar va qo‘llab-quvvatlash</h3>
-              <p>Iqtidorli va zaif o‘quvchilar uchun qo‘shimcha yordam va grantlar mavjud.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- O'qituvchi -->
-        <section id="oqituvchi" class="card spaced">
-          <h2>👩‍🏫 O‘qituvchi huquqlari</h2>
-          <p class="muted">O‘qituvchilar mehnat huquqlari, kasbiy hurmat va xavfsiz sharoitlarga ega bo‘lishi kerak.</p>
-          <div class="grid-cards spaced">
-            <div class="info-card">
-              <h3>Mehnat va to‘lov</h3>
-              <p>O‘qituvchilar mehnat shartnomasi asosida adolatli ish haqi va ijtimoiy kafolatlarga ega.</p>
-            </div>
-            <div class="info-card">
-              <h3>Kafolatlangan huquq va himoya</h3>
-              <p>Pedagoglar kasbiy obro‘si va shaʼni himoyalanishi, nohaq ayblovlarga duch kelmasligi kerak.</p>
-            </div>
-            <div class="info-card">
-              <h3>Kasbiy rivojlanish</h3>
-              <p>O‘qituvchilar doimiy malaka oshirish va yangi metodlarni joriy etishda ishtirok etish huquqiga ega.</p>
-            </div>
-            <div class="info-card">
-              <h3>Ish sharoitlari va xavfsizlik</h3>
-              <p>Maktab xodimlari ish joyida xavfsizlik va ishga mos sharoitlar bilan taʼminlanadi.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Qonunlar -->
-        <section id="qonunlar" class="card spaced">
-          <h2>📜 Asosiy qonunlar va hujjatlar</h2>
-          <p class="muted">Quyida maktab faoliyatiga bevosita taʼsir etuvchi muhim qonunlar va ularning qisqacha mazmuni keltirilgan.</p>
-
-          <div class="grid-cards spaced">
-            <div class="info-card">
-              <h3>Konstitutsiya (41-modda va boshqalar)</h3>
-              <p>Har bir fuqaro umuman taʼlim olish huquqiga ega; davlat taʼlimning taʼminoti va sifatini nazorat qiladi.</p>
-              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/20596" target="_blank" rel="noopener">Konstitutsiyani batafsil o‘qish</a></p>
-            </div>
-
-            <div class="info-card">
-              <h3>“Taʼlim to‘g‘risida”gi Qonun</h3>
-              <p>Taʼlim tizimi, qatnashuvchilarning huquq va majburiyatlari, umumiy tamoyillar bayon etilgan.</p>
-              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/5013007" target="_blank" rel="noopener">Qonunni batafsil o‘qish</a></p>
-            </div>
-
-            <div class="info-card">
-              <h3>Vazirlar Mahkamasining 139-son qarori</h3>
-              <p>“Umumiy o‘rta taʼlim to‘g‘risidagi nizom” — maktablar faoliyati, o‘quv jarayoni va pedagoglarning meʼyoriy huquqlari belgilangan.</p>
-              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/3145806" target="_blank" rel="noopener">139-son qarorni o‘qish</a></p>
-            </div>
-
-            <div class="info-card">
-              <h3>Bola huquqlari to‘g‘risidagi Konvensiya (BMT)</h3>
-              <p>Bolalarning asosiy huquqlari — hayot, taʼlim, himoya va rivojlanish kafolatlari.</p>
-              <p class="sources spaced"><a class="link" href="https://www.ohchr.org/en/instruments-mechanisms/instruments/convention-rights-child" target="_blank" rel="noopener">Konvensiyani o‘qish (ingliz)</a></p>
-            </div>
-
-            <div class="info-card">
-              <h3>Mehnat kodeksi</h3>
-              <p>O‘qituvchilar mehnati, ta\'til, ish shartnomasi va ijtimoiy kafolatlar nazarda tutilgan.</p>
-              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/6496144" target="_blank" rel="noopener">Mehnat kodeksini o‘qish</a></p>
-            </div>
-
-            <div class="info-card">
-              <h3>Maʼmuriy javobgarlik kodeksi</h3>
-              <p>Zo‘ravonlik, haqorat va kamsitish holatlari uchun maʼmuriy choralar belgilangan.</p>
-              <p class="sources spaced"><a class="link" href="https://lex.uz/docs/97664" target="_blank" rel="noopener">Kodeksni o‘qish</a></p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Murojaat -->
-       <section id="murojaat">
-  <h2>📩 Murojaat yuborish</h2>
-  <form action="https://formspree.io/f/xyzbwrno" method="POST">
-    <label>Ismingiz:</label>
-    <input type="text" name="ism" required placeholder="Ismingizni kiriting">
-
-    <label>Kim sifatida murojaat qilmoqdasiz:</label>
-    <select name="rol" required>
-      <option value="oquvchi">O‘quvchi</option>
-      <option value="oqituvchi">O‘qituvchi</option>
-      <option value="otaona">Ota-ona</option>
-    </select>
-
-    <label>Murojaat mavzusi:</label>
-    <input type="text" name="mavzu" required placeholder="Mavzuni kiriting">
-
-    <label>Xabaringiz:</label>
-    <textarea name="xabar" rows="5" required placeholder="Murojaatingizni yozing..."></textarea>
-
-    <button type="submit">Yuborish</button>
-  </form>
+<section id="ustav">
+    <h2>Ustav</h2>
+    <ul>
+        <li>Mashg‘ulotga vaqtida kelish va intizomni saqlash.</li>
+        <li>Sardorning buyruqlariga bo‘ysunish, saf tartibiga rioya qilish.</li>
+        <li>Jismoniy mashqlarda faol qatnashish, o‘zini sinash.</li>
+        <li>Hurmat va sadoqat tamoyillariga amal qilish.</li>
+        <li>Favqulodda holatda xavfsizlik qoidalariga rioya qilish.</li>
+        <li>Jamoaviy hamkorlik va yordamga tayyor bo‘lish.</li>
+        <li>Vatan himoyasi va qadriyatlarini qadrlash.</li>
+    </ul>
 </section>
 
-          <h2>📩 Murojaat yuborish</h2>
-          <p class="muted">Quyidagi shakl orqali o‘z murojaatingizni yuboring. Ushbu forma Formspree orqali to‘g‘ridan-to‘g‘ri sizning email manzilingizga yetkazilishi mumkin.</p>
+<section id="motivatsiya">
+    <h2>Motivatsion Matnlar</h2>
+    <ul>
+        <li>"Vatanga muhabbat — jasoratning boshi."</li>
+        <li>"Kuch — tartibdan boshlanadi."</li>
+        <li>"Harbiy bo‘lish — faqat forma emas, bu iroda va mas’uliyat."</li>
+        <li>"Bugun qiynalsang, ertaga kuchli bo‘lasan."</li>
+        <li>"Har bir mashg‘ulot seni sardorlikka, jasorat va mardlikka yaqinlashtiradi."</li>
+        <li>"Jamoa bilan harakat qilgan odam har doim kuchli bo‘ladi."</li>
+    </ul>
+</section>
 
-          <!-- FORM: action ni Formspree dagi form_id bilan almashtiring.
-               - Formspree da ro'yxatdan o'tib form yaratganingizdan so'ng action="https://formspree.io/f/your_form_id" bo'ladi.
-               - Agar server tomonlama qabul kerak bo'lsa, actionni mos backend URL bilan almashtiring. -->
-          <form id="contactForm" action="https://formspree.io/f/your_form_id" method="POST">
-            <label for="ism">To‘liq ism</label>
-            <input id="ism" name="ism" type="text" placeholder="Ismingiz va familyangiz" required>
+<section id="faktlar">
+    <h2>Qiziqarli Faktlar</h2>
+    <ul>
+        <li>O‘zbekiston armiyasi 1992-yilda tashkil etilgan va mustaqil davlat xavfsizligini ta’minlaydi.</li>
+        <li>Askarlar har kuni kamida 30 daqiqa jismoniy mashq qiladilar.</li>
+        <li>Harbiy intizom va saf tartibi eng muhim fazilat hisoblanadi.</li>
+        <li>Har bir ofitser jasorat, intizom va vatanparvarlikni o‘rnak ko‘rsatadi.</li>
+        <li>Saf mashqlari va jismoniy sinovlar yoshlarni bardoshli va jasur qiladi.</li>
+        <li>O‘zbekiston armiyasida turli ixtisosliklar mavjud: piyoda, tankchilar, harbiy havo kuchlari va boshqalar.</li>
+    </ul>
+</section>
 
-            <label for="rol">Siz kim sifatida murojaat qilmoqdasiz?</label>
-            <select id="rol" name="rol" required>
-              <option value="">— Tanlang —</option>
-              <option value="oquvchi">O‘quvchi</option>
-              <option value="oqituvchi">O‘qituvchi</option>
-              <option value="ota-ona">Ota-ona</option>
-              <option value="boshqa">Boshqa</option>
-            </select>
+<section id="tarbiya">
+    <h2>Ma’naviy Tarbiya</h2>
+    <ul>
+        <li>Vatan sevgisi va yurtga sodiqlikni shakllantirish.</li>
+        <li>Jasorat, mardlik va mas’uliyatni o‘rgatish.</li>
+        <li>Jamoada bir-birini qo‘llab-quvvatlash ko‘nikmasi.</li>
+        <li>O‘zini nazorat qilish, iroda va chidamlilikni rivojlantirish.</li>
+        <li>Tarixiy qahramonlar va ularning jasorat hikoyalari bilan tanishtirish.</li>
+    </ul>
+</section>
 
-            <label for="mavzu">Murojaat mavzusi</label>
-            <input id="mavzu" name="mavzu" type="text" placeholder="Murojaat mavzusi" required>
+<section id="galereya">
+    <h2>Galereya</h2>
+    <ul>
+        <li>Mashg‘ulotlardan fotosuratlar va videolar.</li>
+        <li>Saf mashqlari va trening jarayonlari.</li>
+        <li>Motivatsion va tarbiyaviy materiallar.</li>
+    </ul>
+</section>
 
-            <label for="xabar">Murojaat matni</label>
-            <textarea id="xabar" name="xabar" rows="6" placeholder="Murojaat mazmunini batafsil yozing" required></textarea>
+<footer>
+    <p>© 2025 Jasorat Sardori Markazi. Barcha huquqlar himoyalangan.</p>
+</footer>
 
-            <!-- Optional: email field so that Formspree replies go to sender -->
-            <label for="email">Sizning email (javob olish uchun)</label>
-            <input id="email" name="email" type="email" placeholder="you@example.com">
-
-            <button type="submit">Yuborish</button>
-          </form>
-
-          <p class="spaced small muted">Eslatma: Formspree xizmatidan foydalanish uchun form action ichidagi <code>your_form_id</code> ni o‘zingizning Formspree identifikatoriga almashtiring. Agar serveringiz bo‘lsa, actionni o‘sha manzilga yo‘naltiring.</p>
-        </section>
-
-      </div>
-
-      <!-- RIGHT: aside -->
-      <aside>
-        <div class="card aside-section">
-          <h3>Tezkor manbalar</h3>
-          <p class="muted">Rasmiy va ishonchli sahifalarga havolalar:</p>
-          <ul style="padding-left:16px;color:var(--muted);margin-top:8px">
-            <li><a class="link" href="https://lex.uz" target="_blank" rel="noopener">Lex.uz — rasmiy qonunchilik bazasi</a></li>
-            <li><a class="link" href="https://www.uzedu.uz" target="_blank" rel="noopener">Xalq taʼlimi vazirligi</a></li>
-            <li><a class="link" href="https://ombudsman.uz" target="_blank" rel="noopener">Ombudsman (fuqarolik nazorati)</a></li>
-            <li><a class="link" href="https://www.ohchr.org" target="_blank" rel="noopener">BMT – Inson huquqlari</a></li>
-          </ul>
-        </div>
-
-        <div class="card aside-section">
-          <h3>Favqulodda aloqalar</h3>
-          <p class="small">Agar darhol yordam kerak bo‘lsa, quyidagi raqamlar bilan bog‘laning:</p>
-          <p class="spaced"><b>1146</b> — Bolalar ishonch telefoni (maʼlumot uchun)</p>
-          <p class="spaced"><b>108</b> — Mahalliy favqulodda xizmatlar (masalan, qonuniy yordam uchun yo‘naltirish)</p>
-        </div>
-
-        <div class="card aside-section">
-          <h3>Muallif</h3>
-          <p class="muted">Sayt muallifi: <b>Muslimov Tohir</b></p>
-          <p class="small">Agar sayt mazmunida yoki qonuniy maʼlumotlarda xato sezsangiz, iltimos murojaat yuboring — biz yangilaymiz.</p>
-          <div class="spaced"><a class="link" href="#murojaat">Murojaat yuborish</a></div>
-        </div>
-      </aside>
-    </main>
-
-    <footer>
-      <div>© 2025 Maktabdagi huquqlar — Muallif: <strong>Muslimov Tohir</strong></div>
-      <div class="spaced sources">Manbalar: Konstitutsiya, Taʼlim toʻgʻrisida Qonun, Vazirlar Mahkamasining 139-son qarori, Mehnat kodeksi, Maʼmuriy kodeks. Rasmiy matnlar uchun <a class="link" href="https://lex.uz" target="_blank" rel="noopener">lex.uz</a> sahifasiga murojaat qiling.</div>
-    </footer>
-  </div>
-
-  <!-- Minimal client-side enhancement: form submit feedback -->
-  <script>
-    (function(){
-      const form = document.getElementById('contactForm');
-      if(!form) return;
-      form.addEventListener('submit', function(e){
-        // simple client-side feedback
-        // for Formspree usage: if action is default placeholder, warn user
-        const action = form.getAttribute('action') || '';
-        if(action.includes('your_form_id')){
-          // warn user to set their Formspree id
-          if(!confirm("Siz hali Formspree form_id ni o'rnatmagansiz. Agar form_id o'rnatilmagan bo'lsa, forma yuborilmaydi. Davom etishni xohlaysizmi?")) {
-            e.preventDefault();
-            return;
-          }
-        }
-        // show simple feedback
-        const btn = form.querySelector('button[type=submit]');
-        if(btn){
-          btn.disabled = true;
-          const old = btn.textContent;
-          btn.textContent = 'Yuklanmoqda...';
-          setTimeout(()=>{ btn.disabled=false; btn.textContent = old; }, 4000);
-        }
-      });
-    })();
-  </script>
 </body>
 </html>
