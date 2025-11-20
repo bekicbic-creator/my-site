@@ -16,22 +16,24 @@
         header {
             background-color: #003366;
             color: #fff;
-            padding: 25px 0;
+            padding: 20px 10px;
             text-align: center;
         }
 
         nav {
             background-color: #0055a5;
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            padding: 12px 0;
+            padding: 10px 0;
         }
 
         nav a {
             color: #fff;
             text-decoration: none;
-            margin: 0 15px;
+            margin: 5px 15px;
             font-weight: bold;
+            font-size: 16px;
         }
 
         nav a:hover {
@@ -39,9 +41,9 @@
         }
 
         section {
-            padding: 35px 20px;
+            padding: 25px 15px;
             max-width: 1000px;
-            margin: 20px auto;
+            margin: 15px auto;
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
@@ -50,18 +52,44 @@
         h2 {
             color: #003366;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         ul {
-            line-height: 1.7;
+            line-height: 1.6;
+            padding-left: 20px;
         }
 
         footer {
             background-color: #003366;
             color: #fff;
             text-align: center;
-            padding: 20px 0;
+            padding: 15px 10px;
+        }
+
+        /* Mobilga moslashuv */
+        @media (max-width: 600px) {
+            nav {
+                flex-direction: column;
+                padding: 5px 0;
+            }
+
+            nav a {
+                margin: 5px 0;
+                font-size: 14px;
+            }
+
+            section {
+                padding: 20px 10px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            body {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -75,7 +103,7 @@
 <nav>
     <a href="#ustav">Ustav</a>
     <a href="#motivatsiya">Motivatsiya</a>
-    <a href="#faktlar">Qiziqarli Faktlar</a>
+    <a href="#faktlar">Faktlar</a>
     <a href="#tarbiya">Ma’naviy Tarbiya</a>
     <a href="#galereya">Galereya</a>
 </nav>
@@ -108,12 +136,12 @@
 <section id="faktlar">
     <h2>Qiziqarli Faktlar</h2>
     <ul>
-        <li>O‘zbekiston armiyasi 1992-yilda tashkil etilgan va mustaqil davlat xavfsizligini ta’minlaydi.</li>
+        <li>O‘zbekiston armiyasi 1992-yilda tashkil etilgan.</li>
         <li>Askarlar har kuni kamida 30 daqiqa jismoniy mashq qiladilar.</li>
         <li>Harbiy intizom va saf tartibi eng muhim fazilat hisoblanadi.</li>
         <li>Har bir ofitser jasorat, intizom va vatanparvarlikni o‘rnak ko‘rsatadi.</li>
         <li>Saf mashqlari va jismoniy sinovlar yoshlarni bardoshli va jasur qiladi.</li>
-        <li>O‘zbekiston armiyasida turli ixtisosliklar mavjud: piyoda, tankchilar, harbiy havo kuchlari va boshqalar.</li>
+        <li>O‘zbekiston armiyasida turli ixtisosliklar mavjud: piyoda, tankchilar, havo kuchlari va boshqalar.</li>
     </ul>
 </section>
 
